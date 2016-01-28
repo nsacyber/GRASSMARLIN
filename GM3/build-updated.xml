@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Grassmarlin" default="jar" basedir=".">
+
+    <property file="buid-updated.properties"/>
+
+    <property name="build.dir" value="build"/>
+    <property name="build.classes.dir" value="${build.dir}/classes"/>
+    <property name="class.dir" value="${build.classes.dir}"/>
+    <property name="class.main" value="ui.GrassMarlin"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="dist.resources.dir" value="${basedir}/DistributionFiles/GRASSMARLIN3"/>
+    <property name="gen.dir" location="generated-sources" />
+    <property name="installer.dir" value="Installers"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="package.name" value="core.dataexport"/>
+    <property name="src.dir" value="src"/>
+    <property name="package.path" value="${src.dir}/core/dataexport"/>
+    <property name="xsd.dir" value="resource/xsd"/>
+    <property name="xsd.export.file" value="${xsd.dir}/dataExport.xsd"/>
+
+    <!-- define the various classpaths which serve different purposes -->
+    <path id="build.classpath">
+        <pathelement location="${build.dir}" />
+    </path>
+
+    <path id="jaxb.classpath">
+        <fileset dir="resource/jaxb">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+
+    <path id="lib.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init" depends="clean">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${gen.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${build.classes.dir}"/>
+    </target>
+
+    <target name="generate-sources" depends="genJaxb" description="compile generated source ">
+        <javac srcdir="${gen.dir}"
+               destdir="${build.classes.dir}"
+               source="1.8"
+               optimize="${compile.optimize}"
+               debug="${compile.optimize}">
+        </javac>
+    </target>
+
+    <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+        <classpath refid="jaxb.classpath"/>
+    </taskdef>
+
+    <target name="genJaxb" depends="init" description="generate jaxb src">
+        <mkdir dir="${gen.dir}/core/dataexport"/>
+        <xjc schema="${xsd.dir}\dataExport.xsd" package="core.dataexport" destdir="${gen.dir}">
+            <produces dir="${gen.dir}/core/dataexport" includes="**/*.java"/>
+        </xjc>
+    </target>
+
+    <target name="compile" depends="init, generate-sources">
+        <mkdir dir="${class.dir}"/>
+
+        <javac  includeantruntime="false" srcdir="${src.dir}" destdir="${class.dir}" verbose="${compile.verbose}" debug="${compile.debug}">
+            <src path="${gen.dir}"/>
+            <classpath refid="lib.classpath"/>
+        </javac>
+
+        <copy todir="${class.dir}">
+            <fileset dir="${src.dir}" excludes="**/*.java"/>
+        </copy>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/${ant.project.name}.jar" basedir="${class.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${class.main}"/>
+                <attribute name="Permission" value="High"/>
+            </manifest>
+            <zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
+            <zipfileset dir="${dist.resources.dir}" prefix="GRASSMARLIN3" excludes=".svn"/>
+        </jar>
+    </target>
+
+    <!-- Create a path element of the absolute paths to all required jars. -->
+    <path id="project.classpath">
+        <path location="${lib.antlr.path}"/>
+        <path location="${lib.commoms-io.path}"/>
+        <path location="${lib.commoms-lang.path}"/>
+        <path location="${lib.jnetpcap.path}"/>
+        <path location="${lib.FPC4.path}"/>
+        <path location="${lib.JNWizard.path}"/>
+        <path location="${lib.ICSDefines.path}"/>
+        <path location="${lib.Prefuse.path}"/>
+    </path>
+
+    <!-- Pull in external libraries from separately maintained project components. -->
+    <target name="update-libs">
+        <copy todir="${lib.dir}" flatten="true">
+            <path refid="project.classpath"/>
+        </copy>
+    </target>
+
+    <target name="clean">
+        <delete dir="${dist.dir}"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="${gen.dir}"/>
+        <delete file="Grassmarlin.zip"/>
+    </target>
+
+    <!-- Following targets update & generate installers with latest dist -->
+    <target name="zip-distribution" depends="jar">
+        <zip destfile="Grassmarlin.zip" basedir="${dist.dir}"/>
+    </target>
+
+    <target name="update-installers-linux" depends="zip-distribution">
+        <copy file="Grassmarlin.zip" todir="${installer.dir}/LinuxSetup32"/>
+        <copy file="Grassmarlin.zip" todir="${installer.dir}/LinuxSetup64"/>
+        <echo message="Grassmarlin.zip copied to installers"/>
+    </target>
+
+    <target name="update-installers-windows" depends="zip-distribution">
+        <exec executable="${exec.nsis}">
+            <arg value="${installer.dir}\WindowsInstallers\gm.nsi"/>
+        </exec>
+        <exec executable="${exec.nsis}">
+            <arg value="${installer.dir}\WindowsInstallers\gm_32.nsi"/>
+        </exec>
+    </target>
+
+    <target name="update-installers-all" depends="zip-distribution, update-installers-linux, update-installers-windows">
+        <delete file="Grassmarlin.zip"/>
+    </target>
+
+    <target name="info">
+        <defaultexcludes echo="true"/>
+    </target>
+
+</project>

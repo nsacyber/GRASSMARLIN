@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>GE</Name>
+        <Author>Default</Author>
+        <Description>Identifies the GE 9030 devices.Identifies engineering workstations for the GE 9030 devices.</Description>
+    </Header>
+    <Filter For=" 9030 Device">
+        <SrcPort>18245</SrcPort>
+    </Filter>
+    <Filter For=" 9030 Engineering  workstation">
+        <DstPort>18245</DstPort>
+    </Filter>
+    <Payload For=" 9030 Device">
+        <Match Offset="0" Within="65535" MoveCursors="true">
+            <Content Type="HEX">0200</Content>
+            <AndThen>
+                <Return Confidence="2">
+                    <Extract Name=" GE9030" From="CURSOR_START" To="CURSOR_END"/>
+                </Return>
+            </AndThen>
+        </Match>
+    </Payload>
+    <Payload For=" 9030 Engineering  workstation">
+        <Match Offset="0" Within="65535" MoveCursors="true">
+            <Content Type="HEX">0200</Content>
+            <AndThen>
+                <Return Confidence="5">
+                    <Extract Name="Engineering workstation for GE9030" From="CURSOR_START" To="CURSOR_END"/>
+                </Return>
+            </AndThen>
+        </Match>
+    </Payload>
+</Fingerprint>

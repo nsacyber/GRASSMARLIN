@@ -1,0 +1,3 @@
+commons-io-2.4
+commons-io-2.4-javadoc
+commons-io-2.4-sources

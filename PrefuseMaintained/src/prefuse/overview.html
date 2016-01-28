@@ -1,0 +1,70 @@
+<body>
+<p>
+<a href="http://prefuse.org">
+<span style="font-family: Verdana, Arial, sans-serif; font-style: italic; font-weight: bold">
+prefuse</span></a> is a user interface
+toolkit for building highly-interactive information visualization applications.
+Prefuse provides facilities for data management,
+spatial layout, color, size, and shape encodings, rendering, zooming,
+animation, search, and interaction. Furthermore, it attempts to do so in a
+modular way, allowing users to piece together desired functionality to
+build custom visualization applications.
+</p>
+
+<p>
+The general pattern of building prefuse applications is to
+<ol>
+<li>Load the data to be visualized into prefuse's data structures. prefuse provides built-in
+support for {@link prefuse.data.Table Table}, {@link prefuse.data.Graph Graph}, and 
+{@link prefuse.data.Tree Tree} data structures, and can read from a number of different
+file formats ({@link prefuse.data.io}) as well as communicate with relational databases
+({@link prefuse.data.io.sql}).</li>
+
+<li>Create a {@link prefuse.Visualization Visualization} that maps the loaded data
+to a <i>visual abstraction</i> -- a representation of the data amenable to visual processing,
+rendering, and interaction. Each data element can have one or more corresponding
+{@link prefuse.visual.VisualItem VisualItems} that represent an interactive object on the
+screen. Each VisualItem includes properties such as the x,y location of the object 
+and color, shape, and size settings, while providing access to the underlying data.</li>
+
+<li>Construct a series of data processing {@link prefuse.action Actions} that operate 
+on the visual abstraction. These
+operations can involve just about anything, but common examples include setting the
+location, color, size, and shape of visual items or animating these properties between
+different configurations. These {@link prefuse.action.Action Action} instances can
+be grouped into {@link prefuse.action.ActionList ActionLists} for performing various
+processing tasks, and are backed by a flexible {@link prefuse.activity.ActivityManager
+ActivityManager} supporting event scheduling and animation. Furthermore, the API
+for these {@link prefuse.action.Action Actions} is very simple--just a single method--
+making it easy to extend prefuse to suit your own needs or explore new ideas.</li>
+
+<li>Specify how visual items will be drawn to the screen. For example, do you want to see abstract shapes,
+text labels, or images? This is determined by constructing a
+{@link prefuse.render.RendererFactory RendererFactory} which maps visual items to
+{@link prefuse.render.Renderer Renderer} instances responsible for drawing visual items
+to the screen.</li>
+
+<li>Initialize one or more interactive {@link prefuse.Display Displays} for viewing and
+manipulating visual items. Displays provide optimized rendering of a viewing region,
+and also support view transformations, such as panning and zooming.
+Interactivity can be supplied using any number of pre-built controls
+({@link prefuse.controls}), or custom interactions can be written by
+implemening the {@link prefuse.controls.Control Control} interface. Also, to support
+rich search and filtering through data items, various search engines
+({@link prefuse.data.search}) and dynamic query bindings ({@link prefuse.data.query})
+ are available.</li>
+</ol>
+</p>
+
+<p>Prefuse also provides a host of other features, including a physics simulation engine
+for layout and interaction ({@link prefuse.util.force}), bounds management for optimized
+rendering, data indexing and internal query optimization, and a small SQL-like expression
+language  for creating queries to prefuse's data structures, manipulating data, and creating
+derived data columns ({@link prefuse.data.expression}). Not all of this, however, is required
+for taking advantage of the toolkit, and often much of it is done for you in the background.
+</p>
+
+<p>The latest version of the <span class="prefuse">prefuse</span> code, this
+documentation, a user's manual, and example applications are available
+online at <a href="http://prefuse.org">http://prefuse.org</a></p>
+</body>

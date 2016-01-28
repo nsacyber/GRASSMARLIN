@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FPC4" default="all" basedir=".">
+    <property name="class.dir" value="build/classes"/>
+    <property name="src.dir" value="src"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="dist" value="dist"/>
+    <property name="compile.debug" value="false"/>
+
+    <target name="compile">
+        <mkdir dir="${class.dir}"/>
+        <javac includeantruntime="false" srcdir="${src.dir}" destdir="${class.dir}" verbose="true" debug="${compile.debug}">
+
+            <classpath>
+                <pathelement path="lib/antlr-4.5-complete.jar"/>
+                <pathelement path="lib/ICSDefines.jar"/>
+            </classpath>
+
+        </javac>
+        <copy todir="${class.dir}">
+            <fileset dir="${src.dir}" excludes="**/*.java"/>
+        </copy>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist}"/>
+        <jar destfile="${dist}/${ant.project.name}.jar" basedir="${class.dir}">
+            <manifest>
+                <attribute name="FPC-Class" value="FPC"/>
+                <attribute name="Permission" value="High"/>
+            </manifest>
+            <zipgroupfileset dir="${lib.dir}" includes="**/*.jar"/>
+        </jar>
+    </target>
+
+    <target name="run" depends="compile,jar">
+        <java jar="${dist}/${ant.project.name}.jar" fork="true"/>
+    </target>
+
+    <target name="all" depends="compile, jar, run"/>
+
+    <target name="update-libs">
+        <copy file="../ICSDefines/dist/ICSDefines.jar" todir="${lib.dir}" />
+    </target>
+
+</project>

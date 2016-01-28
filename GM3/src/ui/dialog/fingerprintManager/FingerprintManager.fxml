@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+
+<GridPane alignment="center" hgap="10" prefHeight="800.0" prefWidth="642.0" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.dialog.fingerprintManager.FingerprintManagerDialog">
+   <columnConstraints>
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+   </rowConstraints>
+   <children>
+      <BorderPane prefHeight="800.0" prefWidth="784.0">
+         <top>
+            <BorderPane maxHeight="45.0" prefHeight="9.0" prefWidth="642.0" BorderPane.alignment="CENTER">
+               <right>
+                  <TextField fx:id="searchField" promptText="Search by Name" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </BorderPane.margin>
+                  </TextField>
+               </right>
+               <BorderPane.margin>
+                  <Insets />
+               </BorderPane.margin>
+               <left>
+                  <FlowPane alignment="CENTER_LEFT" hgap="8.0" prefHeight="35.0" prefWidth="313.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <Button fx:id="openInEditorButton" mnemonicParsing="false" text="Open In Editor">
+                           <opaqueInsets>
+                              <Insets left="5.0" />
+                           </opaqueInsets>
+                        </Button>
+                        <CheckBox fx:id="loadOnStartCheckbox" mnemonicParsing="false" text="Load when application starts" />
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <BorderPane.margin>
+                        <Insets />
+                     </BorderPane.margin>
+                     <padding>
+                        <Insets left="5.0" />
+                     </padding>
+                  </FlowPane>
+               </left>
+            </BorderPane>
+         </top>
+         <center>
+            <TableView fx:id="table" prefHeight="500.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+              <columns>
+                <TableColumn fx:id="colName" editable="false" prefWidth="290.0" text="Name" />
+                <TableColumn fx:id="colAuthor" editable="false" minWidth="0.0" prefWidth="257.0" text="Author" />
+                  <TableColumn fx:id="colEnabled" maxWidth="65.0" minWidth="65.0" prefWidth="65.0" resizable="false" text="Enabled" />
+              </columns>
+               <BorderPane.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" />
+               </BorderPane.margin>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+         </center>
+         <bottom>
+            <BorderPane maxHeight="95.0" prefHeight="47.0" prefWidth="642.0" BorderPane.alignment="CENTER">
+               <top>
+                  <BorderPane prefHeight="0.0" prefWidth="642.0" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets />
+                     </BorderPane.margin>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" />
+                     </padding>
+                  </BorderPane>
+               </top>
+               <left>
+                  <FlowPane hgap="8.0" prefHeight="25.0" prefWidth="333.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <Button fx:id="addFingerprintsButton" mnemonicParsing="false" text="Add Fingerprints" />
+                        <Button fx:id="selectAllButton" mnemonicParsing="false" text="Enable All" />
+                     </children>
+                     <BorderPane.margin>
+                        <Insets left="5.0" />
+                     </BorderPane.margin>
+                  </FlowPane>
+               </left>
+               <right>
+                  <Button fx:id="removeSelectionButton" mnemonicParsing="false" text="Remove Selection" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets right="5.0" />
+                     </BorderPane.margin>
+                  </Button>
+               </right>
+               <bottom>
+                  <GridPane prefHeight="44.0" prefWidth="642.0" BorderPane.alignment="CENTER">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints maxHeight="17.0" minHeight="7.0" prefHeight="7.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="17.0" minHeight="7.0" prefHeight="7.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <FlowPane alignment="TOP_RIGHT" hgap="8.0" prefHeight="36.0" prefWidth="632.0" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                           <children>
+                              <Button fx:id="discardChangesButton" mnemonicParsing="false" text="Discard Changes" />
+                              <Button fx:id="saveButton" mnemonicParsing="false" text="Save &amp; Reload" />
+                              <Button fx:id="saveAndCloseButton" mnemonicParsing="false" text="Save, Reload &amp; Close" />
+                           </children>
+                           <GridPane.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </GridPane.margin>
+                        </FlowPane>
+                        <Separator prefWidth="200.0" />
+                     </children>
+                  </GridPane>
+               </bottom>
+            </BorderPane>
+         </bottom>
+      </BorderPane>
+   </children>
+   <stylesheets>
+      <URL value="@FPM.css" />
+   </stylesheets>
+</GridPane>

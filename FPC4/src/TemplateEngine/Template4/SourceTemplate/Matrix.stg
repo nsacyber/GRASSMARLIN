@@ -1,0 +1,20 @@
+/*
+ * Contains template to take a matrix and provide formatting for it.
+ */
+
+MatrixToMap(matrix,var) ::= <<
+<matrix:{ row |<var>.put(<row:{ cell |"<cell>"}; separator=", ">);}; separator="\n">
+>>
+
+DeclarativeList(list, Class, Decl) ::= <<
+<list:{ item | <Decl> <Class> <item>;}; separator="\n">
+>>
+
+PrefixedList(Prefix, Items, Postfix) ::= <<
+<Items:{ item | <Prefix><item><Postfix>}; separator="\n">
+>>
+
+
+Append(Item,Postfix) ::= <<
+<Item> <Postfix> 
+>>

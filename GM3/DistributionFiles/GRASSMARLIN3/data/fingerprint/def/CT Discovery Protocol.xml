@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>CT Discovery Protocol</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of CT Discovery Protocol traffic.</Description>
+        <Tag>Original</Tag>
+    </Header>
+    <Filter For="default">
+        <SrcPort>7022</SrcPort>
+    </Filter>
+    <Payload For="default">
+        <Always>
+            <Return Confidence="3">
+                <Extract Name="CTDP" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>

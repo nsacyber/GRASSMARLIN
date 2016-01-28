@@ -1,0 +1,17 @@
+/*
+ * Template consists of the code block which adds info to resulting data sets.
+ */
+ 
+group Detail;
+import "Matrix.stg"
+
+DetailBlock(FingerprintName, Confidence, Direction, Category, Role, Details=false) ::= <<
+ret = supplier.get();
+<if(FingerprintName)>ret.putName("<FingerprintName>");<endif>
+<if(Confidence)>ret.setConfidence(<Confidence>);<endif>
+<if(Direction)>ret.setDirection(<Direction>);<endif>
+<if(Category)>ret.setCategory(<Category>);<endif>
+<if(Role)>ret.setRole(<Role>);<endif>
+<if(Details)><MatrixToMap(Details,"ret")><endif>
+consumer.accept( ret );
+>>

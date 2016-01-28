@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (C) 2011, 2012
+ This file is part of GRASSMARLIN.
+-->
+<Fingerprint
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:noNamespaceSchemaLocation='../../../src/core/fingerprint/fingerprint3.xsd'>
+    
+    <Header>
+        <Name>DNP3</Name>
+        <Author>Default</Author>
+        <Description>Looks for evidence of DNP3 traffic typically on port 20000.</Description>
+    </Header>
+    
+    <Filter For="DNP3">
+        <DstPort>20000</DstPort>
+    </Filter>
+
+    <Payload For="DNP3">
+        <Description>
+            Finds a DNP3 Master device by matching the DNP3 header and attaches
+            details to both the SOURCE and DESTINATION in the frame.
+        </Description>
+        <Match Offset="0" Relative="false" MoveCursors="false">
+            <Content Type="HEX">0564</Content>
+            <AndThen>
+                <Return Confidence="5" Direction="SOURCE">
+                    <Details>
+                        <Category>IED</Category>
+                        <Role>SLAVE</Role>
+                        <Detail Name="ICSProtocol">DNP3</Detail>
+                    </Details>
+                </Return>
+                <Return Confidence="4" Direction="DESTINATION">
+                    <Details>
+                        <Category>MTU</Category>
+                        <Role>MASTER</Role>
+                        <Detail Name="ICSProtocol">DNP3</Detail>
+                    </Details>
+                </Return>
+            </AndThen>
+        </Match>
+    </Payload>
+  
+</Fingerprint>

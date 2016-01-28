@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>OneHome</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of OneHome Remote Access traffic.This fingerprint looks for the evidence of OneHome Service Port traffic.</Description>
+    </Header>
+    <Filter For=" Remote Access">
+        <DstPort>2198</DstPort>
+    </Filter>
+    <Filter For=" Service Port">
+        <DstPort>2199</DstPort>
+    </Filter>
+    <Payload For=" Remote Access">
+        <Always>
+            <Return Confidence="1">
+                <Extract Name="onehome-remote" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+    <Payload For=" Service Port">
+        <Always>
+            <Return Confidence="1">
+                <Extract Name="ONEHOME-HELP" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>

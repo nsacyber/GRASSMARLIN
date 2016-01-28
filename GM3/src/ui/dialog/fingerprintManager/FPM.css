@@ -1,0 +1,28 @@
+.row-loaded {
+    -fx-control-inner-background: palegreen;
+    -fx-accent: derive(-fx-control-inner-background, -40%);
+    /*-fx-cell-hover-color: derive(-fx-control-inner-background, -20%);*/
+}
+
+.row-failed {
+    -fx-control-inner-background: palevioletred;
+    -fx-accent: derive(-fx-control-inner-background, -40%);
+    /*-fx-cell-hover-color: derive(-fx-control-inner-background, -20%);*/
+}
+
+.row-not-attempted {
+    -fx-control-inner-background: white;
+    -fx-accent: derive(-fx-control-inner-background, -40%);
+    /*-fx-cell-hover-color: derive(-fx-control-inner-background, -20%);*/
+}
+
+.row-not-enabled {
+    -fx-control-inner-background: skyblue;
+    -fx-accent: derive(-fx-control-inner-background, -40%);
+    /*-fx-cell-hover-color: derive(-fx-control-inner-background, -20%);*/
+}
+
+.hide-row {
+    -fx-cell-size: 0;
+    /*visibility:hidden|collapse;*/
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>OMF</Name>
+        <Author>Default</Author>
+        <Description>OMF Data B	This fingerprint looks for the evidence of OMF Data M traffic.This fingerprint looks for the evidence of OMF Data H traffic.This fingerprint looks for the evidence of OMF Data l traffic</Description>
+    </Header>
+    <Filter For=" Data b">
+        <DstPort>3338</DstPort>
+    </Filter>
+    <Filter For=" Data M">
+        <DstPort>3340</DstPort>
+    </Filter>
+    <Filter For=" data h">
+        <DstPort>3341</DstPort>
+    </Filter>
+    <Filter For=" data l">
+        <DstPort>0</DstPort>
+    </Filter>
+    <Payload For=" Data b">
+        <Always>
+            <Return Confidence="5">
+                <Extract Name="Anet-b" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+    <Payload For=" Data M">
+        <Always>
+            <Return Confidence="5">
+                <Extract Name="ANET-M" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+    <Payload For=" data h">
+        <Always>
+            <Return Confidence="5">
+                <Extract Name="ANET-H" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+    <Payload For=" data l">
+        <Always>
+            <Return Confidence="5">
+                <Extract Name="ANET-L" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>

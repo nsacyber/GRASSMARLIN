@@ -1,0 +1,36 @@
+/*
+ * A method/code block template for the ByteJumpFunction.
+ * Steps,
+ * 1. Reads some number of bytes from the payload
+ * 2. Converts it to an integer
+ * 3. (optional) Does follow up arithmatic ( number = x / 2 + 5 )
+ * 4. Moves the cursor based on that converted number
+ *
+ * Uses "offset" & "position" variables
+ * "position" will have the integer stored as a signed int
+ */
+
+group ByteJump;
+
+ByteJumpFunction(PostOffset, Relative, Endian, Offset, Bytes, Calc, Body) ::= <<
+
+
+location = 0;
+offset = <if(Relative || Offset)><if(Relative)>cursor.get()<endif><if(Offset)><if(Relative)>+<endif><Offset><endif><else>0<endif>;
+if(payload.size() > offset ) {
+    location = payload.getInt(offset<if(Bytes)>, <Bytes><endif>, <if(Endian)>false<else>true<endif>);
+    <if(Calc)>
+    {
+        int x = location;
+        location = <Calc>;
+    }<endif>
+    <if(PostOffset)>location += <PostOffset>;<endif>
+    if( payload.size() > location ) {
+        cursor.<if(Relative)>forward<else>set<endif>(location);
+        
+        <if(Body)>
+        <Body>
+        <endif>
+    }
+}
+>>

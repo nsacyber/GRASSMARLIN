@@ -1,0 +1,30 @@
+<body>
+<p>Implementing classes for data tuples, object proxies to a row of table
+data. Prefuse data tables can be accessed and manipulated directly, indexed
+by row numbers, but that is not always the most convenient. The 
+{@link prefuse.data.Tuple}
+interface provides an object-relational mapping, providing an object-oriented
+interface to a row of table data. Furthermore, tuples provide enhanced
+safety, as a deleted row will result in an invalidated tuple, while a
+row index provides no such guarantees.</p>
+
+<p>Groups of tuples can be collected and monitored using the 
+{@link prefuse.data.tuple.TupleSet}
+interface, which {@link prefuse.data.Table}, {@link prefuse.data.Graph}, and
+{@link prefuse.data.Tree} all implement. Other TupleSet instances can
+be used to collect Tuples from any number of backing tables
+({@link prefuse.data.tuple.DefaultTupleSet}) or aggregate multiple
+TupleSets ({@link prefuse.data.tuple.CompositeTupleSet}).</p>
+
+<p>Graph nodes and edges are also represented as Tuples, with additional
+methods for accessing the underlying graph structure. Any methods that
+reference a tree structure will first request a spanning tree from the
+backing graph.</p>
+
+<p>Tuples are created and stored by 
+{@link prefuse.data.tuple.TupleManager} instances. To
+customize tuple creation, one needs to register the appropriate
+concrete Tuple type with an enclosing data table. This is done
+using the {@link prefuse.data.Table#Table(int,int,Class)}
+constructor.</p>
+</body>

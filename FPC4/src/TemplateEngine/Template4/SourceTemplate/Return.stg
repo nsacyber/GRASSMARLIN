@@ -1,0 +1,13 @@
+/*
+ * A method stub/template for the Return blocks.
+ * Match will match a sequence of bytes or a regex on the string equivalent of the input.
+ *
+ */
+group ReturnFunction;
+
+import "DetailBlock.stg"
+
+Return(FingerprintName, Confidence, Direction, Category, Role, Details, Body) ::= <<
+<DetailBlock(FingerprintName, Confidence, Direction, Category, Role, Details)>
+<Body>
+>>
