@@ -5,8 +5,8 @@ GRASSMARLIN is licensed under LGPL 3.0.
 
 
 
-            GNU LESSER GENERAL PUBLIC LICENSE
-                       Version 3, 29 June 2007
+ GNU LESSER GENERAL PUBLIC LICENSE
+ Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  Everyone is permitted to copy and distribute verbatim copies
@@ -174,11 +174,11 @@ Library.
 
 ##Libraries
 
-GRASSMARLIN uses a number of libraries: 
+GRASSMARLIN uses a number of libraries that are licensed under various licenses: 
 
-* Prefuse - http://prefuse.org/ is covered by a BSD license.
-* Common Lang - https://github.com/apache/commons-lang is covered by an Apache 2.0 license.
-* JnetPCAP - http://jnetpcap.com/ is covered by a LGPL 3.0 license.
-* ANTLR4 - http://www.antlr.org is covered by a BSD license.
-* StringTemplate4 - http://www.stringtemplate.org is covered by a BSD license.
-* Common IO - http://github.com/apache/commons-io is covered by an Apache 2.0 license.
+* [Prefuse](http://prefuse.org) is licensed under BSD.
+* [Common Lang](https://github.com/apache/commons-lang) is licensed under Apache 2.0.
+* [JnetPCAP](http://jnetpcap.com) is licensed under LGPL 3.0.
+* [ANTLR4](http://www.antlr.org) is licensed under BSD.
+* [StringTemplate4](http://www.stringtemplate.org) is licensed under BSD.
+* [Common IO](http://github.com/apache/commons-io) is licensed under Apache 2.0.
