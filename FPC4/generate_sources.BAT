@@ -1,1 +1,0 @@
-xjc.exe .\src\TemplateEngine\Template4\fingerprint3.xsd -p TemplateEngine.Fingerprint3 -d src

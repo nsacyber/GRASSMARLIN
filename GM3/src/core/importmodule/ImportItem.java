@@ -4,288 +4,205 @@
  */
 package core.importmodule;
 
-import core.Core.ALERT;
-import core.types.InvokeObservable;
-import core.types.LogEmitter;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Observable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import core.document.Event;
+import core.document.serialization.xml.XmlElement;
+import core.fingerprint3.Fingerprint;
+import core.logging.Logger;
+import core.logging.Severity;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import ui.custom.fx.FxThresholdDoubleProperty;
+import util.Launcher;
 
-/**
- *
- */
-public class ImportItem extends File implements Runnable {
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
-    /**
-     * Import this item is routed to.
-     */
-    Import type;
-    /**
-     * Value between 0 - 100 to indicate work done on this item.
-     */
-    Integer progress;
-    /**
-     * Indicates this item is a candidate to be imported.
-     */
-    boolean included;
-    /**
-     * Will auto log to the System.out if true, else false and silent
-     */
-    boolean logToConsol;
-    /**
-     * values uses to determine the amount of data worked.
-     */
-    long bytesRead, bytesThreashold, tasks;
-    /**
-     * Internal Observers used to provoke external events
-     */
-    InvokeObservable progressObserver, loggerObserver;
-    /**
-     * List of logs - usually for users
-     */
-    List<LogEmitter.Log> logs;
-    /**
-     * Reference to the importer that will run this command object.
-     */
-    Importer importer;
-    
-    final String canonicalPath;
-    private boolean failed;
+public abstract class ImportItem {
+    public AtomicLong edgeTime = new AtomicLong();
+    public AtomicLong fpTime = new AtomicLong();
+    public AtomicLong otherTime = new AtomicLong();
 
-    protected ImportItem(String path, Import type, boolean initializeWithTrueCanonicalPath) {
-        super(path);
-        this.type = type;
-        failed = false;
-        included = false;
-        logToConsol = false;
-        progress = 0;
-        bytesRead = 0L;
-        if (exists()) {
-            bytesThreashold = length() / 100;
-        }
-        progressObserver = new InvokeObservable(this);
-        loggerObserver = new InvokeObservable(this);
-        logs = Collections.synchronizedList(new ArrayList<LogEmitter.Log>());
-        if( initializeWithTrueCanonicalPath ) {
-            try {
-                this.canonicalPath = this.getCanonicalPath();
-            } catch (IOException ex) {
-                Logger.getLogger(ImportItem.class.getName()).log(Level.SEVERE, null, ex);
-                throw new java.lang.ExceptionInInitializerError("The import file does not seem to be valid");
-            }
-        } else {
-            this.canonicalPath = path;
-        }
-    }
-    
-    public ImportItem(String path, Import type) {
-        this(path, type, true);
+    public enum Status {
+        Idle,
+        Started,
+        WaitingOnChildTasks,
+        Complete,
+        Failed
     }
 
-    public ImportItem(String path) {
-        this(path, Import.None);
-    }
+    protected Map<Pipeline, Iterator<?>> iteratorMap;
 
-    public Importer getImporter() {
-        return importer;
-    }
-    
-    /**
-     * @return True if this import has an updated progress indicator, else false.
-     */
-    public boolean allowsProgress() {
-        return true;
-    }
+    protected final List<Fingerprint> fingerprints;
+    protected final Path path;
 
-    public Integer getProgress() {
+    private final SimpleObjectProperty<Status> status = new SimpleObjectProperty<>(Status.Idle);
+    protected final FxThresholdDoubleProperty progress = new FxThresholdDoubleProperty(0.01, 0.0);
+
+    public DoubleProperty progressProperty() {
         return progress;
     }
 
     /**
-     * Import.NONE items cannot be processed and will always return false.
-     * @return True if item's type is not NONE and is marked as included.
+     * Every Import action involves performing a sequence of weighted actions.  This tracks how many units have been
+     * processed.  Normally, 1 unit corresponds to 1 byte from the source file, but it might also represent records or
+     * some other unit of similar granularity.
      */
-    public Boolean isIncluded() {
-        return !Import.None.equals(type) && included;
+    private final AtomicLong unitsProcessed = new AtomicLong();
+
+    private final AtomicLong bytesSinceUpdate = new AtomicLong(0);
+    private long bytesPerUpdate = 0;
+    /**
+     * Get the total number of units in this import.
+     * @return By default, the number of units equals the number of bytes in the file.
+     */
+    protected abstract long getTotalUnits();
+
+    public static class TImportItemUpdatedEventArgs {
+        //TODO: Flesh out ImportItem event model.
+    }
+
+    public Event<TImportItemUpdatedEventArgs> OnImportItemModified = new Event<>();
+
+    protected ImportItem(Path path, List<Fingerprint> fingerprints) {
+        this.path = path;
+        this.fingerprints = fingerprints;
+
+        this.iteratorMap = new HashMap<>();
+
+        unitsProcessed.set(0);
+
     }
 
     /**
-     * Mark this item as included in the current import.
      *
-     * @param b True to include this item and process it, else false to skip it.
+     * @return the iterator for the give pipeline
      */
-    public void setInclude(boolean b) {
-        included = b;
+    public Iterator<?> getIterator(Pipeline pipeline) {
+        Iterator<?> iterator = this.iteratorMap.get(pipeline);
+        if (iterator == null) {
+            switch (pipeline) {
+                case LOGICAL:
+                    iterator = getLogicalIterator();
+                    break;
+
+                case PHYSICAL:
+                    iterator = getPhysicalIterator();
+                    break;
+            }
+            this.iteratorMap.put(pipeline, iterator);
+        }
+        return this.iteratorMap.get(pipeline);
     }
 
-    public void setType(Import t) {
-        type = t;
+    protected abstract Iterator<?> getLogicalIterator();
+    protected abstract Iterator<?> getPhysicalIterator();
+
+    public String getDisplayName() {
+        return getClass().getCanonicalName();
     }
 
-    public Boolean hasTasks() {
-        return tasks > 0;
+    public Path getPath() {
+        return this.path;
     }
 
-    public void notifyTaskCreation() {
-        tasks++;
+    public Class<? extends ImportItem> getType() {
+        return getClass();
     }
 
-    public void notifyTaskCompletion() {
-        tasks--;
-        if (isComplete()) {
-            updateProgress();
+    public SimpleObjectProperty<Status> statusProperty() {
+        return status;
+    }
+    public Status getStatus() {
+        return status.get();
+    }
+
+    public List<Fingerprint> getFingerprints() {
+        if(this.fingerprints == null) {
+            return new LinkedList<>();
+        } else {
+            return Collections.unmodifiableList(this.fingerprints);
         }
     }
 
-    public long getTaskCount() {
-        return tasks;
-    }
-
-    public Boolean isComplete() {
-        return progress >= 100 && !hasTasks();
-    }
-
-    public Import getType() {
-        return type;
-    }
-
     /**
-     * @return True if this item exists and can be read from disk.
+     * Update progress on a task without completing the task.
+     * @param unitsProcessed
      */
-    public boolean isGood() {
-        return exists() && canRead();
-    }
+    public void recordTaskProgress(int unitsProcessed) {
+        long unitsTotal = this.unitsProcessed.addAndGet(unitsProcessed);
+        long unitsSinceUpdate = bytesSinceUpdate.addAndGet(unitsProcessed);
 
-    /**
-     * Called when this item is fully read. Since time in processing could be
-     * indeterminate we jump to half done. Tasks still report the rest.
-     *
-     * @return this, instance is returned so that methods may be chained.
-     */
-    public ImportItem readComplete() {
-        progress = 100;
-        updateProgress();
-        return this;
-    }
-
-    public Observable getProgressObserver() {
-        return progressObserver;
-    }
-
-    public Observable getLogObserver() {
-        return loggerObserver;
-    }
-
-    public void setLogToConsole(boolean logToConsol) {
-        this.logToConsol = logToConsol;
-    }
-
-    public void log(Object invoker, ALERT level, Object msg) {
-        logs.add(new LogEmitter.Log(invoker, level, msg));
-        loggerObserver.setChanged();
-        if (this.logToConsol) {
-            System.out.println(msg);
-        }
-    }
-
-    public void pushLog(Object invoker, ALERT level, Object msg) {
-        log(invoker, level, msg);
-        loggerObserver.notifyObservers(this);
-    }
-
-    public List<LogEmitter.Log> getLog() {
-        return logs;
-    }
-
-    /**
-     * Default method to update the progress of an ImportItem is to tell it how
-     * many bytes where just read. Will notify observers on each 1% tick.
-     *
-     * @param bytes Bytes read so far.
-     * @param taskDone will reduce the amount of tasks if true, else tasks will
-     * not be changed.
-     */
-    public void updateProgress(int bytes, boolean taskDone) {
-        if (bytes == 0) {
+        if(status.get() != Status.Complete) {
+            //If the basic condition is met, then lock and check again, ensuring only a single thread performs the check and eliminating the lock contention unless a change has to be made.
+            if(unitsSinceUpdate > bytesPerUpdate) {
+                synchronized(bytesSinceUpdate) {
+                    if(bytesSinceUpdate.get() > bytesPerUpdate) {
+                        bytesSinceUpdate.addAndGet(-bytesPerUpdate);
+                    }
+                }
+                //This is prone to race condition issues, but it is acceptable to call this multiple times, and preferable, to minimize the lock time.
+                if(!progress.isBound()) {
+                    progress.set((double) unitsTotal / (double) getTotalUnits());
+                }
+            }
+        } else {
+            //We're already marked as done; happens occasionally with multithreaded processing of task queue.
             return;
         }
-        bytesRead += bytes;
-        if (taskDone) {
-            tasks--;
-        }
-        updateProgress();
+    }
+
+    public void recordTaskCompletion() {
+        status.set(Status.Complete);
+        AnnounceStatus();
+        progress.setForceUpdate(1.0);
+
+        /*
+        System.out.println("Edge Time = " + edgeTime.get());
+        System.out.println("FP Time = " + fpTime.get());
+        System.out.println("Other Time = " + otherTime.get());
+        */
     }
 
     /**
-     * Notifies observers when A) there is significant progress, B) import is
-     * complete
+     * Return the current size formatted in human-readable units.
+     * Despite the lack of apparent references, this is used via reflection in the Import Dialog.
      */
-    public void updateProgress() {
-        if (bytesRead >= bytesThreashold) {
-            bytesRead -= bytesThreashold;
-            if (progress < 100) {
-                progress++;
-            }
-            forceUpdateProgress();
-        } else if (isComplete()) {
-            forceUpdateProgress();
-        }
-    }
+    public abstract String getDisplaySize();
 
     @Override
     public String toString() {
-        return String.format("name:%s, selected:%b, method:%s", getName(), included, type.name());
+        return String.format("[%s: %s]", getDisplayName(), path.getFileName());
     }
 
-    public String getSafeCanonicalPath() {
-        return this.canonicalPath;
-    }
-    
-    /**
-     * Resets progress and notifies observers.
-     */
-    public void reset() {
-        progress = 0;
-        bytesRead = 0;
-        forceUpdateProgress();
+    public void AnnounceStatus() {
+        switch(getStatus()) {
+            case Idle:
+            case Started:
+                Logger.log(this, Severity.Success, this.toString() + ": Import is running.");
+                break;
+            case Complete:
+                Logger.log(this, Severity.Information, this.toString() + ": Import has completed.");
+                break;
+            case WaitingOnChildTasks:
+                Logger.log(this, Severity.Warning, this.toString() + ": Import is waiting on child tasks to complete.");
+                break;
+            case Failed:
+                Logger.log(this, Severity.Error, this.toString() + ": Import has failed.");
+                break;
+        }
     }
 
-    void forceUpdateProgress() {
-        progressObserver.setChanged();
-        progressObserver.notifyObservers(this);
-    }
+    public XmlElement toXml() {
+        XmlElement xmlImport = new XmlElement("import");
+        xmlImport.addAttribute("src").setValue(path.toAbsolutePath().toString());
+        xmlImport.addAttribute("type").setValue(this.getClass().getName());
 
-    public void setImporter(Importer importer) {
-        this.importer = importer;
-    }
-    
-    public boolean failed() {
-        return failed;
-    }
-    
-    
-    public void fail() {
-        this.failed = true;
-        reset();
-    }
-    
-    public void fail(String msg) {
-        fail();
-        LogEmitter.factory.get().emit(this, ALERT.DANGER, this.getName() + ": " + msg);
-        Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, msg);
-    }
-    
-    /**
-     * Override to force cancellation of tasks.
-     */
-    public void cancel() {}
-    
-    @Override
-    public void run() {};
+        final String namePlugin = Launcher.pluginFor(this.getClass());
+        if(namePlugin != null) {
+            xmlImport.addAttribute("plugin").setValue(namePlugin);
+        }
 
+        return xmlImport;
+    }
 }

@@ -43,6 +43,7 @@
                                 <xs:element name="Window" type="xs:unsignedByte" minOccurs="0" maxOccurs="unbounded"/>
                             </xs:sequence>
                             <xs:attribute name="For" type="xs:string" use="required"/>
+                            <xs:attribute name="Name" type="xs:string" use="optional"/>
                         </xs:complexType>
                     </xs:element>
                 </xs:sequence>
@@ -67,7 +68,7 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:complexType name="Header">
         <xs:sequence>
             <xs:element name="Name" type="xs:string"/>
@@ -76,8 +77,8 @@
             <xs:element name="Tag" type="boundString" maxOccurs="unbounded" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
-    
-    
+
+
     <xs:simpleType name="boundString">
         <xs:restriction base="xs:string">
             <xs:minLength value="3"/>
@@ -99,16 +100,16 @@
     <xs:group name="Operation">
         <xs:sequence>
             <xs:choice maxOccurs="unbounded">
-            <xs:element name="Match" type="MatchFunction" minOccurs="0"/>
-            <xs:element name="ByteTest" type="ByteTestFunction" minOccurs="0"/>
-            <xs:element name="IsDataAt" type="IsDataAtFunction" minOccurs="0"/>
-            <xs:element name="ByteJump" type="ByteJumpFunction" minOccurs="0"/>
-            <xs:element ref="Anchor" minOccurs="0"/>
-            <xs:element ref="Return" minOccurs="0"/>
+                <xs:element name="Match" type="MatchFunction" minOccurs="0"/>
+                <xs:element name="ByteTest" type="ByteTestFunction" minOccurs="0"/>
+                <xs:element name="IsDataAt" type="IsDataAtFunction" minOccurs="0"/>
+                <xs:element name="ByteJump" type="ByteJumpFunction" minOccurs="0"/>
+                <xs:element ref="Anchor" minOccurs="0"/>
+                <xs:element ref="Return" minOccurs="0"/>
             </xs:choice>
         </xs:sequence>
     </xs:group>
-    
+
     <xs:element name="Return" type="Return"/>
     <xs:complexType name="Return">
         <xs:sequence>
@@ -120,7 +121,7 @@
         <xs:attribute ref="Direction" default="SOURCE"/>
         <xs:attribute name="Confidence" type="Confidence" use="required"/>
     </xs:complexType>
-    
+
     <xs:element name="Extract">
         <xs:complexType>
             <xs:sequence>
@@ -133,7 +134,7 @@
             <xs:attribute ref="Endian"/>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="Post">
         <xs:complexType>
             <xs:attribute name="Convert" type="ContentType"/>
@@ -148,7 +149,7 @@
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:complexType name="DetailGroup">
         <xs:sequence>
             <xs:element name="Category" minOccurs="0">
@@ -194,7 +195,7 @@
             </xs:element>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:simpleType name="Index">
         <xs:union memberTypes="xs:integer Position"/>
     </xs:simpleType>
@@ -207,7 +208,7 @@
         <xs:attribute ref="Relative"/>
         <xs:attribute ref="Offset"/>
     </xs:complexType>
-    
+
     <xs:attribute name="Cursor" type="Cursor"/>
     <xs:simpleType name="Cursor">
         <xs:restriction base="xs:string">
@@ -216,7 +217,7 @@
             <xs:enumeration value="END"/>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:attribute name="Position" type="Position"/>
     <xs:simpleType name="Position">
         <xs:restriction base="xs:string">
@@ -227,7 +228,7 @@
             <xs:enumeration value="CURSOR_END"/>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <!--    IsDataAt  -->
     <xs:complexType name="IsDataAtFunction">
         <xs:sequence>
@@ -236,7 +237,7 @@
         <xs:attribute name="Offset" type="FrameSize" use="required"/>
         <xs:attribute ref="Relative"/>
     </xs:complexType>
-    
+
     <!--    Content -->
     <xs:complexType name="MatchFunction">
         <xs:sequence>
@@ -262,7 +263,7 @@
         <xs:attribute name="Within" type="xs:unsignedShort" default="0"/>
         <xs:attribute name="MoveCursors" type="xs:boolean" default="true"/>
     </xs:complexType>
-   
+
     <!--      ByteTest      -->
     <xs:complexType name="ByteTestFunction">
         <xs:sequence>
@@ -283,7 +284,7 @@
         <xs:attribute ref="Offset" default="0"/>
         <xs:attribute ref="Bytes" default="1"/>
     </xs:complexType>
-   
+
     <!--    ByteJump Function   -->
     <xs:complexType name="ByteJumpFunction">
         <xs:sequence>
