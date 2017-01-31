@@ -4,9 +4,9 @@ GRASSMARLIN provides IP network situational awareness of industrial control syst
 
 ## Documentation
 
-To learn more about GRASSMARLIN, read the introduction paper:
-* [Download PDF](https://github.com/iadgov/GRASSMARLIN/raw/master/GRASSMARLIN.pdf)
-* [View PDF on GitHub](https://github.com/iadgov/GRASSMARLIN/blob/master/GRASSMARLIN.pdf)
+GrassMarlin v3.2 User Guide:
+* [Download PDF](https://github.com/iadgov/GRASSMARLIN/GRASSMARLIN User Guide.pdf)
+* [View PDF on GitHub](https://github.com/iadgov/GRASSMARLIN User Guide.pdf)
 
 A [presentation on GRASSMARLIN](http://sites.nationalacademies.org/cs/groups/depssite/documents/webpage/deps_169632.pdf) is also available.
 
