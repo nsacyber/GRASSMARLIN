@@ -14,6 +14,8 @@ A [presentation on GRASSMARLIN](http://sites.nationalacademies.org/cs/groups/dep
 
 Download the [latest release](https://github.com/iadgov/GRASSMARLIN/releases/latest).
 
+File hashes are located in [FileHash.md](./FileHash.md).
+
 ## License
 
 See [LICENSE.md](./LICENSE.md).
