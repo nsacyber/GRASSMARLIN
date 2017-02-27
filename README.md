@@ -16,7 +16,7 @@ Download the [latest release](https://github.com/iadgov/GRASSMARLIN/releases/lat
 
 ## License
 
-See [LICENSE.md](./LICENSE.md)
+See [LICENSE.md](./LICENSE.md).
 
 ## Disclaimer
 
