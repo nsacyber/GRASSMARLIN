@@ -172,7 +172,7 @@ permanent authorization for you to choose that version for the
 Library.
 ```
 
-##Libraries
+## Libraries
 
 GRASSMARLIN uses a number of libraries that are licensed under various licenses: 
 
