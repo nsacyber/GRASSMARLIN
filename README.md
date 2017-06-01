@@ -8,7 +8,7 @@ GrassMarlin v3.2 User Guide:
 * [Download PDF](https://github.com/iadgov/GRASSMARLIN/raw/master/GRASSMARLIN%20User%20Guide.pdf)
 * [View PDF on GitHub](https://github.com/iadgov/GRASSMARLIN/blob/master/GRASSMARLIN%20User%20Guide.pdf)
 
-A [presentation on GRASSMARLIN](http://sites.nationalacademies.org/cs/groups/depssite/documents/webpage/deps_169632.pdf) is also available.
+A [presentation on GRASSMARLIN](http://sites.nationalacademies.org/cs/groups/depssite/documents/webpage/GRASSMARLIN_Briefing_20170210.pptx) is also available.
 
 ## Release
 
