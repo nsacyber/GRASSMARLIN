@@ -62,12 +62,13 @@ public abstract class PcapDeviceList {
                     result.add(new DeviceEntry(device));
                 }
             }
-
+            Pcap.freeAllDevs(devices, error);
         } catch (java.lang.UnsatisfiedLinkError ex) {
             result.clear();
             Logger.log(PcapDeviceList.class, Severity.Error, "Live capture is unavailable do to insufficient permissions or a missing PCAP library.");
-        } finally {
-            Pcap.freeAllDevs(devices, error);
+        } catch(Exception ex) {
+            result.clear();
+            Logger.log(PcapDeviceList.class, Severity.Error, "Live capture is unavailable.");
         }
 
         return result;

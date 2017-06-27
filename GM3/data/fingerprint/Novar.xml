@@ -3,36 +3,48 @@
     <Header>
         <Name>Novar</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of Novar Alarm traffic.This fingerprint looks for the evidence of Novar Global traffic.This fingerprint looks for the evidence of Novar Data traffic.</Description>
+        <Description>This fingerprint looks for evidence of Novar Alarm traffic. This fingerprint looks for evidence of Novar Global traffic. This fingerprint looks for evidence of Novar Data traffic.</Description>
     </Header>
-    <Filter For=" Alarm">
+    <Filter For="Novar Alarm" Name="Alarm">
         <SrcPort>23401</SrcPort>
     </Filter>
-    <Filter For=" Global">
+    <Filter For="Novar Global" Name="Global">
         <SrcPort>23402</SrcPort>
     </Filter>
-    <Filter For=" Data">
+    <Filter For="Novar Data" Name="Data">
         <SrcPort>23400</SrcPort>
     </Filter>
-    <Payload For=" Alarm">
+    <Payload For="Novar Alarm">
+		<Description>This fingerprint looks for evidence of Novar Alarm traffic.</Description>
         <Always>
-            <Return Confidence="1">
-                <Extract Name="NOVAR-ALARM" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">Novar Alarm</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>
-    <Payload For=" Global">
+	<Payload For="Novar Global">
+		<Description>This fingerprint looks for evidence of Novar Global traffic.</Description>
         <Always>
-            <Return Confidence="1">
-                <Extract Name="NOVAR-GLOBAL" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">Novar Global</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>
-    <Payload For=" Data">
+	<Payload For="Novar Data">
+		<Description>This fingerprint looks for evidence of Novar Data traffic.</Description>
         <Always>
-            <Return Confidence="1">
-                <Extract Name="NOVAR-DBASE" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">Novar Data</Detail>
+                </Details>
             </Return>
         </Always>
-    </Payload>
+    </Payload>	
 </Fingerprint>

@@ -51,7 +51,7 @@ public class TransportProtoFilter implements Filter<Short> {
         Label protoLabel = new Label("Protocol:");
         ChoiceBox<Short> protoBox = new ChoiceBox<>(FXCollections.observableArrayList(supportedProtocols.keySet()));
         protoBox.setConverter(new ProtocolConverter());
-        protoBox.setValue(TCP_PROTO_NUM);
+        protoBox.setValue(this.proto);
 
         protoBox.valueProperty().addListener(change -> {
             proto = protoBox.getValue();

@@ -29,6 +29,7 @@ public class PayloadEditorPane extends BorderPane implements ParentBox {
     private SimpleBooleanProperty hasAlways;
     private VBox childrenBox;
     private List<OpRow> children;
+    private TextField descField;
     private boolean loading;
 
     private PayloadEditorPane(PayloadItem item, FingerPrintGui gui) {
@@ -46,12 +47,17 @@ public class PayloadEditorPane extends BorderPane implements ParentBox {
         HBox descBox = new HBox(2);
 
         Label descLabel = new Label("Description:");
-        TextField descField = new TextField(this.boundItem.getDescription());
+        descField = new TextField(this.boundItem.getDescription());
 
         descBox.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(descField, Priority.ALWAYS);
         descBox.getChildren().addAll(descLabel, descField);
         descBox.setPadding(new Insets(0, 0, 10, 0));
+
+        descField.textProperty().addListener(observable -> {
+            this.boundItem.getPayload().setDescription(descField.getText());
+            update();
+        });
 
         this.setTop(descBox);
         this.setCenter(childrenBox);
@@ -110,6 +116,7 @@ public class PayloadEditorPane extends BorderPane implements ParentBox {
         if (child instanceof AlwaysRow) {
             this.gui.updateAlways(boundItem, null);
             this.boundItem.getPayload().setAlways(null);
+            this.hasAlways.set(false);
         }
         this.children.remove(child);
     }
@@ -138,6 +145,7 @@ public class PayloadEditorPane extends BorderPane implements ParentBox {
                 .collect(Collectors.toList());
 
         this.gui.updateOperations(boundItem, operationList);
+        this.gui.updatePayloadDescription(boundItem, this.descField.getText());
         this.boundItem.getPayload().getOperation().clear();
         this.boundItem.getPayload().getOperation().addAll(operationList);
     }

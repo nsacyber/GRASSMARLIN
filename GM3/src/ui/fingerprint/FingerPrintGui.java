@@ -6,6 +6,8 @@ import core.fingerprint.FingerprintBuilder;
 import core.fingerprint.FingerprintState;
 import core.fingerprint3.Fingerprint;
 import core.fingerprint3.ObjectFactory;
+import core.logging.Logger;
+import core.logging.Severity;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -105,6 +107,7 @@ public class FingerPrintGui extends Application {
                 FPItem item = createTree(fp);
                 return item;
             })
+            .filter(item -> item != null)
             .collect(Collectors.toList());
 
             this.rootItem.getChildren().addAll(items);
@@ -431,13 +434,17 @@ public class FingerPrintGui extends Application {
         TreeItem<String> firstNewItem = null;
         for (FingerprintState fingerprint : added) {
             FPItem item = createTree(fingerprint);
-            this.rootItem.getChildren().add(item);
-            this.rootItem.getChildren().sort((ti1, ti2) -> ti1.getValue().compareTo(ti2.getValue()));
-            if (null == firstNewItem) {
-                firstNewItem = item;
+            if (item != null) {
+                this.rootItem.getChildren().add(item);
+                this.rootItem.getChildren().sort((ti1, ti2) -> ti1.getValue().compareTo(ti2.getValue()));
+                if (null == firstNewItem) {
+                    firstNewItem = item;
+                }
             }
         }
-        this.tree.getSelectionModel().select(firstNewItem);
+        if (null != firstNewItem) {
+            this.tree.getSelectionModel().select(firstNewItem);
+        }
     }
 
     private FPItem createTree(FingerprintState fpState) {
@@ -446,20 +453,25 @@ public class FingerPrintGui extends Application {
         Fingerprint fp = fpState.getFingerprint();
         FPItem item = new FPItem(fpState);
 
-        fp.getPayload().forEach(payload -> {
+        for (Fingerprint.Payload payload : fp.getPayload()) {
             PayloadItem payloadItem = new PayloadItem(payload);
             payloadMap.put(payload.getFor(), payloadItem);
             item.getChildren().add(payloadItem);
-        });
-        fp.getFilter().forEach(group -> {
+        }
+        for (Fingerprint.Filter group : fp.getFilter()) {
             FilterGroupItem groupItem = new FilterGroupItem(group.getName());
             group.getAckAndMSSAndDsize().forEach(filter -> {
                 FilterItem newFilter = new FilterItem(Filter.FilterType.valueOf(filter.getName().toString().replaceAll(" ", "").toUpperCase()), group.getAckAndMSSAndDsize().indexOf(filter), this, filter);
                 groupItem.getChildren().add(newFilter);
             });
             PayloadItem payload = payloadMap.get(group.getFor());
-            payload.getChildren().add(groupItem);
-        });
+            if (payload != null) {
+                payload.getChildren().add(groupItem);
+            } else {
+                Logger.log(this, Severity.Warning, "Malformed Fingerprint: Filter group without payload");
+                item = null;
+            }
+        }
 
         return item;
     }
@@ -753,6 +765,11 @@ public class FingerPrintGui extends Application {
                 field.selectAll();
             }
         });
+    }
+
+    public void updatePayloadDescription(PayloadItem payload, String description) {
+        FPItem fp = getFPItem(payload);
+        this.document.updatePayloadDescription(fp.getName(), fp.pathProperty().get(), payload.getPayload().getFor(), description);
     }
 
     public void updateAlways(PayloadItem payload, Fingerprint.Payload.Always always) {

@@ -212,7 +212,7 @@ public class PayloadFunctions {
                         value = DatatypeConverter.printHexBinary(ext);
                         break;
                     case INTEGER:
-                        value = new BigInteger(ext).toString();
+                        value = new BigInteger(1, ext).toString();
                         break;
                     case RAW_BYTES:
                         value = Arrays.toString(ext);
@@ -292,24 +292,14 @@ public class PayloadFunctions {
         if (relative) {
             offset += cursor.getMain();
         }
-        if (depth > 0) {
-            offset = Math.min(depth, offset);
-        }
-        offset -= within;
-        if (offset < 0) {
-            offset = 0;
-        }
 
         int length;
         // find the end point
-        if (relative && (within > 0)) {
-            length = Math.min(payload.size(), cursor.getMain() + within);
+        if (depth > 0) {
+            length = Math.min(depth, payload.size() - offset);
         } else {
-            length = payload.size();
+            length = payload.size() - offset;
         }
-
-        // set the length to the end point minus the starting point
-        length = length - offset;
 
         if (patternString != null) {
             String string = new String(payload.getByteArray(offset, length), charset);

@@ -1,6 +1,8 @@
 package core.fingerprint;
 
 import core.fingerprint3.Fingerprint;
+import core.logging.Logger;
+import core.logging.Severity;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -12,6 +14,8 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 07.13.2015 - CC - New...
@@ -40,6 +44,14 @@ public class FingerprintBuilder {
             writer.flush();
             fingerprints[0] = (Fingerprint) unmarshaller.unmarshal(new StringReader(string.toString()));
             fingerprints[1] = (Fingerprint) unmarshaller.unmarshal(new StringReader(string.toString()));
+
+            List<String> payloads = fingerprints[0].getPayload().stream().map(payload -> payload.getFor()).collect(Collectors.toList());
+            List<String> filters = fingerprints[0].getFilter().stream().map(filter -> filter.getFor()).collect(Collectors.toList());
+
+            if (!payloads.containsAll(filters)) {
+                fingerprints = null;
+                Logger.log(FingerprintBuilder.class, Severity.Warning, "Malformed Fingerprint at " + fingerprintPath + ": Filter group without payload");
+            }
         }
 
         return fingerprints;

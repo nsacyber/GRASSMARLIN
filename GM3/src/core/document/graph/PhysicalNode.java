@@ -6,10 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import util.Mac;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class PhysicalNode implements INode<PhysicalNode> {
@@ -18,7 +15,7 @@ public abstract class PhysicalNode implements INode<PhysicalNode> {
     public static final String FIELD_MAC = "MAC";
     public static final String FIELD_VLAN = "VLan(s)";
 
-    protected final Mac mac;
+    protected Mac mac;
     private final SimpleStringProperty title;
     private final SimpleStringProperty subtitle;
     private final SimpleBooleanProperty dirty;

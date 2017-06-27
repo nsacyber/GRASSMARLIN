@@ -7,6 +7,7 @@ import core.document.serialization.xml.XmlElement;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import ui.dialog.ManageLogicalNetworksDialogFx;
 import util.Cidr;
 
 import java.io.IOException;
@@ -24,11 +25,11 @@ public class LogicalGraph extends NetworkGraph<LogicalNode, LogicalEdge> {
     protected LogicalGraph(ObservableList<Cidr> cidrs) {
         this.cidrsLogical = cidrs;
         cidrsLogical.addListener(this::Handle_NetworksChanged);
+        ManageLogicalNetworksDialogFx.getInstance().itemsProperty().setValue(this.cidrsLogical);
     }
 
     public LogicalGraph() {
-        cidrsLogical = new CidrList();
-        cidrsLogical.addListener(this::Handle_NetworksChanged);
+        this(new CidrList());
     }
 
     private void Handle_NetworksChanged(ListChangeListener.Change<? extends Cidr> c) {

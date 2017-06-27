@@ -78,14 +78,17 @@ public class LogicalProcessor {
     public void run() {
         long start = System.currentTimeMillis();
         IEdge<LogicalNode> edge = graph.apply(this.data);
-        LogicalNode source = edge.getSource();
-        LogicalNode dest = edge.getDestination();
+        LogicalNode edgeSource = edge.getSource();
+        LogicalNode edgeDestination = edge.getDestination();
         long end = System.currentTimeMillis();
 
         data.getSource().edgeTime.addAndGet(end - start);
 
-        this.data.setSourceNode(source);
-        this.data.setDestNode(dest);
+        LogicalNode dataSource = edgeSource.getIp().equals(data.getSourceIp()) ? edgeSource : edgeDestination;
+        LogicalNode dataDestination = edgeDestination.getIp().equals(data.getDestIp()) ? edgeDestination : edgeSource;
+
+        this.data.setSourceNode(dataSource);
+        this.data.setDestNode(dataDestination);
 
         start = System.currentTimeMillis();
         this.processor.process(data);

@@ -72,7 +72,7 @@ public class PcapFileParser {
 
                 //final int majorVersion = intFromBytes(header, 5, 2, isSwapped);
                 //final int minorVersion = intFromBytes(header, 7, 2, isSwapped);
-                final int secGmtOffset = intFromBytes(header, 9, 4, isSwapped);
+                final long secGmtOffset = intFromBytes(header, 9, 4, isSwapped);
                 //TODO: SigFigs
                 //TODO: SnapLen
                 //TODO: Network
@@ -81,10 +81,14 @@ public class PcapFileParser {
 
                 buffer = ByteBuffer.allocateDirect(16);
                 buffer.mark();
-                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                if (isSwapped) {
+                    buffer.order(ByteOrder.BIG_ENDIAN);
+                } else {
+                    buffer.order(ByteOrder.LITTLE_ENDIAN);
+                }
                 while(16 == reader.read(buffer)) {
-                    final int sTimestamp = buffer.getInt(0);//intFromBytes(headerPacket, 0, 4, true);
-                    final int usTimestamp = buffer.getInt(4);//intFromBytes(headerPacket, 4, 4, true);
+                    final long sTimestamp = buffer.getInt(0);//intFromBytes(headerPacket, 0, 4, true);
+                    final long usTimestamp = buffer.getInt(4);//intFromBytes(headerPacket, 4, 4, true);
                     final int lengthPacket = buffer.getInt(8);//intFromBytes(headerPacket, 8, 4, true);       //This is the captured length
 
                     final ByteBuffer contentsPacket;
@@ -103,7 +107,7 @@ public class PcapFileParser {
                     }
                     contentsPacket.rewind();
 
-                    final int cbProcessed = handler.handle(contentsPacket, (sTimestamp + secGmtOffset) * 1000 + usTimestamp / 1000, idxFrame++);
+                    final int cbProcessed = handler.handle(contentsPacket, (sTimestamp + secGmtOffset) * 1000L + usTimestamp / 1000, idxFrame++);
                     source.recordTaskProgress(lengthPacket + 16 - cbProcessed);
 
                     buffer.reset();

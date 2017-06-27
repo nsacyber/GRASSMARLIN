@@ -56,7 +56,8 @@ public abstract class Csv {
                         writer.write(",");
                     }
                     bFirst = false;
-                    writer.write(fieldFromString(col.getCellObservableValue(row).getValue().toString()));
+                    String fieldValue = col.getCellObservableValue(row).getValue() != null ? col.getCellObservableValue(row).getValue().toString() : "";
+                    writer.write(fieldFromString(fieldValue));
                 }
                 writer.newLine();
             }

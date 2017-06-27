@@ -55,19 +55,23 @@ public class FPDocument {
         } else {
             try {
                 Fingerprint[] fingerprint = FingerprintBuilder.loadFingerprint(fingerPrintPath);
-                //add names to Filter Groups if they don't have one for backwards compatibility
-                for (int i = 0; i < fingerprint[0].getFilter().size(); i++) {
-                    if (fingerprint[0].getFilter().get(i).getName() == null) {
-                        fingerprint[0].getFilter().get(i).setName("Filter Group " + i);
-                        fingerprint[1].getFilter().get(i).setName("Filter Group " + 1);
+                if (fingerprint != null) {
+                    //add names to Filter Groups if they don't have one for backwards compatibility
+                    for (int i = 0; i < fingerprint[0].getFilter().size(); i++) {
+                        if (fingerprint[0].getFilter().get(i).getName() == null) {
+                            fingerprint[0].getFilter().get(i).setName("Filter Group " + i);
+                            fingerprint[1].getFilter().get(i).setName("Filter Group " + 1);
+                        }
                     }
+                    FingerprintState state = new FingerprintState(fingerprint[0], fingerPrintPath);
+                    FingerprintState runningState = new FingerprintState(fingerprint[1], fingerPrintPath);
+                    state.enabledProperty().setValue(true);
+                    listFingerprints.add(state);
+                    runningFingerprints.add(runningState);
+                    return state;
+                } else {
+                    return null;
                 }
-                FingerprintState state = new FingerprintState(fingerprint[0], fingerPrintPath);
-                FingerprintState runningState = new FingerprintState(fingerprint[1], fingerPrintPath);
-                state.enabledProperty().setValue(true);
-                listFingerprints.add(state);
-                runningFingerprints.add(runningState);
-                return state;
             } catch (IOException ioe) {
                 Alert ioAlert = new Alert(Alert.AlertType.ERROR, ioe.getMessage());
                 ioAlert.setHeaderText("Error Loading Fingerprint");
@@ -316,11 +320,36 @@ public class FPDocument {
                         .noneMatch(pl -> pl.getFor().equals(newName));
                 if (goodName) {
                     payload.get().setFor(newName);
+                    fpState.get().getFingerprint().getFilter().stream()
+                            .filter(filter -> filter.getFor().equals(oldName))
+                            .forEach(filter -> filter.setFor(newName));
                     updated = true;
                     fpState.get().dirtyProperty().setValue(true);
                 }
             }
         }
+        return updated;
+    }
+
+    public boolean updatePayloadDescription(String fingerprintName, Path loadPath, String payloadName, String description) {
+        boolean updated = false;
+
+        Optional<FingerprintState> fpState = listFingerprints.stream()
+                .filter(state -> state.equals(fingerprintName, loadPath))
+                .findFirst();
+
+        if (fpState.isPresent()) {
+            Optional<Fingerprint.Payload> payload = fpState.get().getFingerprint().getPayload().stream()
+                    .filter(pl -> pl.getFor().equals(payloadName))
+                    .findFirst();
+
+            if (payload.isPresent()) {
+                payload.get().setDescription(description);
+                updated = true;
+                fpState.get().dirtyProperty().set(true);
+            }
+        }
+
         return updated;
     }
 

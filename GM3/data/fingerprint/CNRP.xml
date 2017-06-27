@@ -3,15 +3,20 @@
     <Header>
         <Name>CNRP</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of CNRP traffic</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint looks for evidence of CNRP traffic</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="Common Name Resolution Protocol" Name="DstPort">
         <DstPort>2757</DstPort>
     </Filter>
-    <Payload For="default">
+    <Payload For="Common Name Resolution Protocol">
+        <Description>Tags the Common Name Resolution Protocol</Description>
         <Always>
-            <Return Confidence="2"/>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="Name Resolution Protocol">Common Name Resolution Protocol</Detail>
+                </Details>
+            </Return>
         </Always>
     </Payload>
 </Fingerprint>

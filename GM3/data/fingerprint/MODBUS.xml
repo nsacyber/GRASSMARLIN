@@ -1,48 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
- Copyright (C) 2011, 2012
- This file is part of GRASSMARLIN.
--->
-<Fingerprint
-    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-    xsi:noNamespaceSchemaLocation='../../../src/core/fingerprint/fingerprint3.xsd'>
-    
+<Fingerprint>
     <Header>
         <Name>MODBUS</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of MODBUS traffic on port 502.</Description>
+        <Description>This fingerprint looks for evidence of MODBUS traffic on port 502.</Description>
     </Header>
-    
-    <Filter For="TCP Slave Unit Number">
+    <Filter For="TCP Slave Unit Number" Name="TCP Slave">
         <TransportProtocol>6</TransportProtocol>
         <SrcPort>502</SrcPort>
     </Filter>
-    
-    <Filter For="UDP Client/Server Unit Number">
+    <Filter For="UDP Client/Server Unit Number" Name="UDP Client/Server">
         <TransportProtocol>17</TransportProtocol>
         <SrcPort>502</SrcPort>
     </Filter>
-    
-    <Filter For="TCP Master">
+    <Filter For="TCP Master" Name="TCP Master">
         <TransportProtocol>6</TransportProtocol>
         <DstPort>502</DstPort>
     </Filter>
-
     <Payload For="TCP Master">
+		<Description>MODBUS TCP Master</Description>
         <Always>
             <Return Confidence="4">
                 <Details>
                     <Category>MTU</Category>
+					<Role>MASTER</Role>
                     <Detail Name="ICSProtocol">MODBUS</Detail>
                 </Details>
             </Return>
         </Always>
-    </Payload>    
-    
+    </Payload>
     <Payload For="UDP Client/Server Unit Number">
-        <Description>
-            MODBUS UDP Client or Server
-        </Description>
+        <Description>MODBUS UDP Client or Server</Description>
         <Always>
             <Return Confidence="4">
                 <Details>
@@ -52,11 +40,8 @@
             </Return>
         </Always>
     </Payload>
-    
     <Payload For="TCP Slave Unit Number">
-        <Description>
-            MODBUS TCP Slave Unit Number
-        </Description>
+        <Description>MODBUS TCP Slave Unit Number</Description>
         <Always>
             <Return Confidence="4">
                 <Details>
@@ -64,11 +49,8 @@
                     <Role>SLAVE</Role>
                     <Detail Name="ICSProtocol">MODBUS</Detail>
                 </Details>
+				<Extract Name="Unit" From="6" To="7"/>
             </Return>
         </Always>
-        <Return Confidence="4">
-            <Extract Name="Unit" From="6" To="7"/>
-        </Return>
     </Payload>
-    
 </Fingerprint>

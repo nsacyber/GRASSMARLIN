@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Fingerprint>
     <Header>
-        <Name>ServerStart RemoteControl</Name>
+        <Name>ServerStart</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of ServerStart RemoteControl traffic.</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint looks for evidence of ServerStart RemoteControl traffic.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="ServerStart" Name="RemoteControl">
         <SrcPort>9213</SrcPort>
     </Filter>
-    <Payload For="default">
+    <Payload For="ServerStart">
+        <Description>Tags inbound ServerStart RemoteControl traffic by source port</Description>
         <Always>
-            <Return Confidence="1">
-                <Extract Name="SERVERSTART" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">ServerStart RemoteControl</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>

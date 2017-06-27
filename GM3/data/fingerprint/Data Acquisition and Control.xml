@@ -3,16 +3,19 @@
     <Header>
         <Name>Data Acquisition and Control</Name>
         <Author>Default</Author>
-        <Description>Data Acquisition and Control</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint identifies evidence of Data Acquisition and Control traffic.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="IDAC" Name="Intelligent Data Acquisition and Control">
         <DstPort>3881</DstPort>
     </Filter>
-    <Payload For="default">
-        <Always>
-            <Return Confidence="1">
-                <Extract Name="IDAC" From="CURSOR_START" To="CURSOR_END"/>
+    <Payload For="IDAC">
+		<Description>Tags Intelligent Data Acquisition and Control</Description>
+		<Always>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">Intelligent Data Acquisition and Control</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>

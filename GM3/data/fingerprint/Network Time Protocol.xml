@@ -3,16 +3,21 @@
     <Header>
         <Name>Network Time Protocol</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of Network Time Protocol traffic.</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint looks for evidence of Network Time Protocol traffic.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="NTP" Name="Ports">
         <SrcPort>0</SrcPort>
         <DstPort>123</DstPort>
     </Filter>
-    <Payload For="default">
+    <Payload For="NTP">
+        <Description>This fingerprint looks for the evidence of Network Time Protocol traffic.</Description>
         <Always>
-            <Return Confidence="2"/>
+            <Return Confidence="4">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">NTP</Detail>
+                </Details>
+            </Return>
         </Always>
     </Payload>
 </Fingerprint>

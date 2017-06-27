@@ -3,17 +3,34 @@
     <Header>
         <Name>CT Discovery Protocol</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of CT Discovery Protocol traffic.</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint looks for evidence of CT Discovery Protocol traffic.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="CTDP Src" Name="SrcPort">
         <SrcPort>7022</SrcPort>
     </Filter>
-    <Payload For="default">
+    <Filter For="CTDP Dst" Name="DstPort">
+        <DstPort>7022</DstPort>
+    </Filter>	
+    <Payload For="CTDP Src">
+		<Description>Tags source traffic of CT Discovery Protocol</Description>
         <Always>
-            <Return Confidence="3">
-                <Extract Name="CTDP" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="DiscoveryProtocol">CT Discovery Protocol</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>
+    <Payload For="CTDP Dst">
+		<Description>Tags destination traffic of CT Discovery Protocol</Description>
+        <Always>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="DiscoveryProtocol">CT Discovery Protocol</Detail>
+                </Details>
+            </Return>
+        </Always>
+    </Payload>	
 </Fingerprint>

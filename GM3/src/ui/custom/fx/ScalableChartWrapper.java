@@ -1,6 +1,8 @@
 package ui.custom.fx;
 
 import com.sun.javafx.collections.ObservableListWrapper;
+import core.logging.Severity;
+import core.svg.Svg;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
@@ -12,12 +14,18 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.FileChooser;
 import util.Wireshark;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ScalableChartWrapper extends GridPane {
     protected class LegendEntry extends HBox {
@@ -184,6 +192,23 @@ public class ScalableChartWrapper extends GridPane {
 
 
         menu.getItems().addAll(
+                new ActiveMenuItem("_Export to SVG...", (event) -> {
+                    final FileChooser dlgExportTo = new FileChooser();
+                    dlgExportTo.getExtensionFilters().addAll(
+                            new FileChooser.ExtensionFilter("SVG Image Files (*.svg)", "*.svg"),
+                            new FileChooser.ExtensionFilter("All Files", "*")
+                    );
+                    final File exportTo = dlgExportTo.showSaveDialog(ScalableChartWrapper.this.getScene().getWindow());
+                    if(exportTo != null) {
+                        try(BufferedWriter writer = new BufferedWriter(new FileWriter(exportTo))) {
+                            writer.write(
+                                    Svg.serialize(ScalableChartWrapper.this).replaceAll("(\\s+\\n)+", "\n")
+                            );
+                        } catch(IOException ex) {
+                            core.logging.Logger.log(this, Severity.Error, "There was an error exporting the graph: " + ex.getMessage());
+                        }
+                    }
+                }),
                 new ActiveMenuItem("_Reset Zoom", (event) -> this.zoomReset()),
                 new ActiveMenuItem("_Undo Zoom", (event) -> this.zoomPrevious())
                         .bindEnabled(new ListSizeBinding(zoomHistory).greaterThan(0)),
