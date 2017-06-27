@@ -3,16 +3,19 @@
     <Header>
         <Name>FODMS FLIP</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of FODMS FLIP traffic.</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint looks for evidence of FODMS FLIP traffic.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="FODMS FLIP" Name="SrcPort">
         <SrcPort>7200</SrcPort>
     </Filter>
-    <Payload For="default">
+    <Payload For="FODMS FLIP">
+        <Description>Fiber optics multiplexing service as per RFC 822</Description>
         <Always>
-            <Return Confidence="1">
-                <Extract Name="FODMS" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">FODMS FLIP</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>

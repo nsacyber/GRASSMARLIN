@@ -3,15 +3,20 @@
     <Header>
         <Name>CAMP</Name>
         <Author>Default</Author>
-        <Description>Could indicate CAMP protocol </Description>
-        <Tag>Original</Tag>
+        <Description>Possible indication of command/response from CAMP. When a CAMP command is sent to another node, reponse is expected. This allows the application to determine whether a command was sucessfully completed.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="Common ASCII Message Protocol" Name="DstPort">
         <DstPort>4450</DstPort>
     </Filter>
-    <Payload For="default">
+    <Payload For="Common ASCII Message Protocol">
+        <Description>Tags the Common ASCII Message Protocol</Description>
         <Always>
-            <Return Confidence="1"/>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="Message Protocol">Common ASCII Message Protocol</Detail>
+                </Details>
+            </Return>
         </Always>
     </Payload>
 </Fingerprint>

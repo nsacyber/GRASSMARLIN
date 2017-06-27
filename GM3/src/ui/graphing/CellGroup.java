@@ -207,8 +207,7 @@ public class CellGroup<TNode extends INode<TNode>, TEdge extends IEdge<TNode>> e
             ptsPolygon.push(points.get(idxPoint));
         }
         for(int idxPoint = points.size() - 2; idxPoint >= 0; idxPoint--) {
-            while(ptsPolygon.size() >= 2 && ptsPolygon.get(ptsPolygon.size() - 1).subtract(ptsPolygon.get(ptsPolygon.size() - 2))
-                    .crossProduct(points.get(idxPoint).subtract(ptsPolygon.get(ptsPolygon.size() - 2))).getZ() <= 0) {
+            while(ptsPolygon.size() >= 2 && ptsPolygon.get(ptsPolygon.size() - 1).subtract(ptsPolygon.get(ptsPolygon.size() - 2)).crossProduct(points.get(idxPoint).subtract(ptsPolygon.get(ptsPolygon.size() - 2))).getZ() <= 0) {
                 ptsPolygon.pop();
             }
             ptsPolygon.push(points.get(idxPoint));

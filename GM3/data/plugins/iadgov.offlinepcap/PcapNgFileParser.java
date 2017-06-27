@@ -206,7 +206,7 @@ public class PcapNgFileParser {
                 cbProcessed = handler.handle(bufPacket, ts * 1000L / timestampResolutions.get(idInterface), idxFrame++);
                 //Variable length options will be included.
                 source.recordTaskProgress(sizeBlock - cbProcessed);
-                return sizeBlock - (28 + cbProcessed);
+                return sizeBlock - (28 + cbCapture);
             case 4: //Name Resolution Block
                 //TODO: Parse the name resolution block and use the data to augment nodes
                 source.recordTaskProgress(sizeBlock);

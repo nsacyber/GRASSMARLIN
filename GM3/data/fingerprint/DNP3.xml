@@ -1,38 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
- Copyright (C) 2011, 2012
- This file is part of GRASSMARLIN.
--->
-<Fingerprint
-    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-    xsi:noNamespaceSchemaLocation='../../../src/core/fingerprint/fingerprint3.xsd'>
-    
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
     <Header>
         <Name>DNP3</Name>
         <Author>Default</Author>
-        <Description>Looks for evidence of DNP3 traffic typically on port 20000.</Description>
+        <Description>Looks for evidence of DNP3 traffic on src/des on port 20000</Description>
     </Header>
-    
-    <Filter For="DNP3">
+    <Filter For="DNP3_Master" Name="Master">
         <DstPort>20000</DstPort>
     </Filter>
-
-    <Payload For="DNP3">
-        <Description>
-            Finds a DNP3 Master device by matching the DNP3 header and attaches
-            details to both the SOURCE and DESTINATION in the frame.
-        </Description>
-        <Match Offset="0" Relative="false" MoveCursors="false">
+    <Filter For="DNP3_Slave" Name="Slave">
+        <SrcPort>20000</SrcPort>
+    </Filter>
+    <Payload For="DNP3_Master">
+        <Description>Finds a DNP3 Master device by matching the DNP3 header and attaches details to the DESTINATION in the frame.</Description>
+        <Match Offset="0" Reverse="true" NoCase="false" Depth="0" Relative="false" Within="0" MoveCursors="false">
             <Content Type="HEX">0564</Content>
             <AndThen>
-                <Return Confidence="5" Direction="SOURCE">
-                    <Details>
-                        <Category>IED</Category>
-                        <Role>SLAVE</Role>
-                        <Detail Name="ICSProtocol">DNP3</Detail>
-                    </Details>
-                </Return>
-                <Return Confidence="4" Direction="DESTINATION">
+                <Return Direction="SOURCE" Confidence="4">
                     <Details>
                         <Category>MTU</Category>
                         <Role>MASTER</Role>
@@ -42,5 +26,19 @@
             </AndThen>
         </Match>
     </Payload>
-  
+    <Payload For="DNP3_Slave">
+        <Description>Finds a DNP3 Slave device by matching the DNP3 header and attaches details to the SOURCE in the frame.</Description>
+        <Match Offset="0" Reverse="true" NoCase="false" Depth="0" Relative="false" Within="0" MoveCursors="false">
+            <Content Type="HEX">0564</Content>
+            <AndThen>
+                <Return Direction="SOURCE" Confidence="4">
+                    <Details>
+                        <Category>IED</Category>
+                        <Role>SLAVE</Role>
+                        <Detail Name="ICSProtocol">DNP3</Detail>
+                    </Details>
+                </Return>
+            </AndThen>
+        </Match>
+    </Payload>
 </Fingerprint>

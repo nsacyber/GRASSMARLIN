@@ -40,7 +40,7 @@
                                         <xs:attribute name="Max" type="xs:integer"/>
                                     </xs:complexType>
                                 </xs:element>
-                                <xs:element name="Window" type="xs:unsignedByte" minOccurs="0" maxOccurs="unbounded"/>
+                                <xs:element name="Window" type="xs:integer" minOccurs="0" maxOccurs="unbounded"/>
                             </xs:sequence>
                             <xs:attribute name="For" type="xs:string" use="required"/>
                             <xs:attribute name="Name" type="xs:string" use="optional"/>

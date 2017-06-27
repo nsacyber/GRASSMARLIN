@@ -24,6 +24,8 @@ public class PhysicalTopology {
      */
     public static final String TOKEN_WORKSTATION = "\\\\";
 
+    private final ListChangeListener deviceListener;
+
     public static class DirectConnection {
         private final Mac mac1;
         private final Mac mac2;
@@ -97,7 +99,16 @@ public class PhysicalTopology {
         this.graphPhysical = graphPhysical;
 
         devices = new ObservableListWrapper<>(new CopyOnWriteArrayList<>());
-        devices.addListener(this::Handle_DeviceListModified);
+        this.deviceListener = this::Handle_DeviceListModified;
+        devices.addListener(this.deviceListener);
+    }
+
+    public void startLoading() {
+        devices.removeListener(this.deviceListener);
+    }
+
+    public void endLoading() {
+        devices.addListener(this.deviceListener);
     }
 
     public ObservableList<PhysicalDevice> getDevices() {

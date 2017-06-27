@@ -3,45 +3,61 @@
     <Header>
         <Name>OMF</Name>
         <Author>Default</Author>
-        <Description>OMF Data B	This fingerprint looks for the evidence of OMF Data M traffic.This fingerprint looks for the evidence of OMF Data H traffic.This fingerprint looks for the evidence of OMF Data l traffic</Description>
+        <Description>This fingerprint looks for evidence of OMF Data B traffic. This fingerprint looks for evidence of OMF Data M traffic. This fingerprint looks for evidence of OMF Data H traffic. This fingerprint looks for evidence of OMF Data L traffic</Description>
     </Header>
-    <Filter For=" Data b">
+    <Filter For="Data B" Name="ANET-B">
         <DstPort>3338</DstPort>
     </Filter>
-    <Filter For=" Data M">
+    <Filter For="Data M" Name="ANET-M">
         <DstPort>3340</DstPort>
     </Filter>
-    <Filter For=" data h">
+    <Filter For="Data H" Name="ANET-H">
         <DstPort>3341</DstPort>
     </Filter>
-    <Filter For=" data l">
+    <Filter For="Data L" Name="ANET-L">
         <DstPort>0</DstPort>
     </Filter>
-    <Payload For=" Data b">
+    <Payload For="Data B">
+       <Description>OMF Data B ANET-B</Description>
         <Always>
             <Return Confidence="5">
-                <Extract Name="Anet-b" From="CURSOR_START" To="CURSOR_END"/>
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">ANET-B</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>
-    <Payload For=" Data M">
+    <Payload For="Data M">
+        <Description>OMF Data M ANET-M</Description>
         <Always>
             <Return Confidence="5">
-                <Extract Name="ANET-M" From="CURSOR_START" To="CURSOR_END"/>
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">ANET-M</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>
-    <Payload For=" data h">
+    <Payload For="Data H">
+        <Description>OMF Data H ANET-H</Description>
         <Always>
             <Return Confidence="5">
-                <Extract Name="ANET-H" From="CURSOR_START" To="CURSOR_END"/>
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">ANET-H</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>
-    <Payload For=" data l">
+    <Payload For="Data L">
+        <Description>OMF Data L ANET-L</Description>
         <Always>
             <Return Confidence="5">
-                <Extract Name="ANET-L" From="CURSOR_START" To="CURSOR_END"/>
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">ANET-L</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>

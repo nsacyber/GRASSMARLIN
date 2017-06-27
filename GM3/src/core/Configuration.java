@@ -63,7 +63,11 @@ public class Configuration {
         DIR_IMAGES_ICON("dir.images.icon", () -> "images"),
         PATH_MANUFACTURER_DB("path.wireshark.manuf", () -> {
             if(SystemUtils.IS_OS_WINDOWS) {
-                return Paths.get(Paths.get(Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC)).getParent().toString(), "manuf").toString();
+                if (Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC) != null) {
+                    return Paths.get(Paths.get(Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC)).getParent().toString(), "manuf").toString();
+                } else {
+                    return null;
+                }
             } else {
                 return "/usr/share/wireshark/manuf";
             }

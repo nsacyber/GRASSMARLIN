@@ -157,7 +157,10 @@ public class ImportDialog extends Dialog {
                                 row.getItem().setType(processor);
                             })
                         ).collect(Collectors.toList())
-                    )
+                    ),
+                    new ActiveMenuItem("Remove", event -> {
+                        document.get().removePendingImport(row.getItem());
+                    })
             );
 
             row.contextMenuProperty().bind(new When(row.emptyProperty()).then((ContextMenu)null).otherwise(menuRow));

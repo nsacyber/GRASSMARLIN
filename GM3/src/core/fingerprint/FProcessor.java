@@ -18,10 +18,113 @@ import java.util.stream.Stream;
  */
 public class FProcessor {
 
+    private static class UnpackedFilter<T> {
+        private Filter.FilterType type;
+        private T value;
+
+        public UnpackedFilter (Filter.FilterType type, T value) {
+            this.type = type;
+            this.value = value;
+        }
+
+        public Filter.FilterType getType() {
+            return this.type;
+        }
+
+        public T getValue() {
+            return this.value;
+        }
+    }
+
+    private static class UnpackedFilterGroup {
+        private String payloadName;
+        private List<UnpackedFilter<?>> filters;
+
+        public UnpackedFilterGroup(String payloadName, List<UnpackedFilter<?>> filters) {
+            this.payloadName = payloadName;
+            this.filters = filters;
+        }
+
+        public String getFor() {
+            return this.payloadName;
+        }
+
+        public List<UnpackedFilter<?>> getFilters() {
+            return this.filters;
+        }
+    }
+
     List<Fingerprint> fingerprints;
+    Map<Fingerprint, Map<String, List<UnpackedFilterGroup>>> filtersByPayload;
 
     public FProcessor(List<Fingerprint> runningFingerprints) {
         this.fingerprints = Collections.unmodifiableList(new ArrayList<>(runningFingerprints));
+        this.filtersByPayload = unpackFilters(this.fingerprints);
+
+    }
+
+    private synchronized static Map<Fingerprint, Map<String, List<UnpackedFilterGroup>>> unpackFilters(List<Fingerprint> fingerprints) {
+        Map<Fingerprint, Map<String, List<UnpackedFilterGroup>>> returnMap = new HashMap<>();
+        for (Fingerprint fp : fingerprints) {
+            Map<String, List<UnpackedFilterGroup>> groupByPayload = fp.getFilter().stream()
+                    .map(group -> {
+                        List<UnpackedFilter<?>> filters = group.getAckAndMSSAndDsize().stream()
+                                .map(element -> {
+                                    UnpackedFilter<?> filter = null;
+                                    switch (Filter.FilterType.valueOf(element.getName().toString().replaceAll(" ", "").toUpperCase())) {
+                                        case ACK:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.ACK, (Long) element.getValue());
+                                            break;
+                                        case DSIZE:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.DSIZE, (Integer) element.getValue());
+                                            break;
+                                        case DSIZEWITHIN:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.DSIZEWITHIN, (Fingerprint.Filter.DsizeWithin) element.getValue());
+                                            break;
+                                        case DSTPORT:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.DSTPORT, (Integer) element.getValue());
+                                            break;
+                                        case ETHERTYPE:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.ETHERTYPE, (Integer) element.getValue());
+                                            break;
+                                        case FLAGS:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.FLAGS, (String) element.getValue());
+                                            break;
+                                        case MSS:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.MSS, (Integer) element.getValue());
+                                            break;
+                                        case SEQ:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.SEQ, (Integer) element.getValue());
+                                            break;
+                                        case SRCPORT:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.SRCPORT, (Integer) element.getValue());
+                                            break;
+                                        case TRANSPORTPROTOCOL:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.TRANSPORTPROTOCOL, (Short) element.getValue());
+                                            break;
+                                        case TTL:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.TTL, (Integer) element.getValue());
+                                            break;
+                                        case TTLWITHIN:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.TTLWITHIN, (Fingerprint.Filter.TTLWithin) element.getValue());
+                                            break;
+                                        case WINDOW:
+                                            filter = new UnpackedFilter<>(Filter.FilterType.WINDOW, (Integer) element.getValue());
+                                            break;
+                                    }
+                                    return filter;
+                                })
+                                .filter(filter -> filter != null)
+                                .collect(Collectors.toList());
+
+                        return new UnpackedFilterGroup(group.getFor(), filters);
+                    })
+                    .collect(Collectors.groupingBy(UnpackedFilterGroup::getFor));
+
+            returnMap.put(fp, groupByPayload);
+        }
+
+        return returnMap;
     }
 
     public void process(PacketData data) {
@@ -38,42 +141,41 @@ public class FProcessor {
     private Stream<Fingerprint.Payload> filter(Fingerprint fp, PacketData data) {
         List<String> payloadNames = new ArrayList<>();
 
-        Map<String, List<Fingerprint.Filter>> filterByPayload = fp.getFilter().stream()
-                .collect(Collectors.groupingBy(filter -> filter.getFor()));
+        Map<String, List<UnpackedFilterGroup>> filterByPayload = this.filtersByPayload.get(fp);
 
         for (String payload : filterByPayload.keySet()) {
             groupLoop:
-            for (Fingerprint.Filter filterGroup : filterByPayload.get(payload)) {
-                for(JAXBElement<?> element : filterGroup.getAckAndMSSAndDsize()) {
-                    switch (Filter.FilterType.valueOf(element.getName().toString().replaceAll(" ", "").toUpperCase())) {
+            for (UnpackedFilterGroup filterGroup : filterByPayload.get(payload)) {
+                for(UnpackedFilter<?> filter : filterGroup.getFilters()) {
+                    switch (filter.getType()) {
                         case ACK:
-                            if (data.getAck() != (Long)element.getValue()) {
+                            if (data.getAck() != (Long)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case DSIZE:
-                            if (data.getdSize() != (Integer)element.getValue()) {
+                            if (data.getdSize() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case DSIZEWITHIN:
-                            Fingerprint.Filter.DsizeWithin within = ((Fingerprint.Filter.DsizeWithin) element.getValue());
+                            Fingerprint.Filter.DsizeWithin within = ((Fingerprint.Filter.DsizeWithin) filter.getValue());
                             if (data.getdSize() < within.getMin().longValue() || data.getdSize() > within.getMax().longValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case DSTPORT:
-                            if (data.getDestPort() != (Integer)element.getValue()) {
+                            if (data.getDestPort() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case ETHERTYPE:
-                            if (data.getEthertype() != (Integer)element.getValue()) {
+                            if (data.getEthertype() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case FLAGS:
-                            String flagList = (String)element.getValue();
+                            String flagList = (String)filter.getValue();
                             if (data.getFlags() != null) {
                                 for (String flag : flagList.split(" ")) {
                                     if (!data.getFlags().contains(flag)) {
@@ -83,38 +185,38 @@ public class FProcessor {
                             }
                             break;
                         case MSS:
-                            if (data.getMss() != (Integer)element.getValue()) {
+                            if (data.getMss() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case SEQ:
-                            if (data.getSeqNum() != (Integer)element.getValue()) {
+                            if (data.getSeqNum() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case SRCPORT:
-                            if (data.getSourcePort() != (Integer)element.getValue()) {
+                            if (data.getSourcePort() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case TRANSPORTPROTOCOL:
-                            if (data.getTransportProtocol() != (Short)element.getValue()) {
+                            if (data.getTransportProtocol() != (Short)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case TTL:
-                            if (data.getTtl() != (Integer)element.getValue()) {
+                            if (data.getTtl() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case TTLWITHIN:
-                            Fingerprint.Filter.TTLWithin ttlWithin = (Fingerprint.Filter.TTLWithin)element.getValue();
+                            Fingerprint.Filter.TTLWithin ttlWithin = (Fingerprint.Filter.TTLWithin)filter.getValue();
                             if (data.getTtl() < ttlWithin.getMin().longValue() || data.getTtl() > ttlWithin.getMax().longValue()) {
                                 continue groupLoop;
                             }
                             break;
                         case WINDOW:
-                            if (data.getWindowNum() != (Integer)element.getValue()) {
+                            if (data.getWindowNum() != (Integer)filter.getValue()) {
                                 continue groupLoop;
                             }
                             break;

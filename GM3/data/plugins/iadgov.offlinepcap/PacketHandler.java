@@ -55,7 +55,7 @@ public class PacketHandler {
         final byte protocol;
         final Cidr ipSource;
         final Cidr ipDest;
-        final byte ttl;
+        final int ttl;
         final int cbIp;
         final int idxLastIpByte;
 
@@ -68,9 +68,15 @@ public class PacketHandler {
             protocol = bufPacket.get(startCurrentHeader + 9);
             ipSource = new Cidr(((long)bufPacket.getInt(startCurrentHeader + 12)) & 0x00000000FFFFFFFFL);
             ipDest = new Cidr(((long)bufPacket.getInt(startCurrentHeader + 16)) & 0x00000000FFFFFFFFL);
-            ttl = bufPacket.get(startCurrentHeader + 8);
+            ttl = (int)bufPacket.get(startCurrentHeader + 8) & 0x000000FF;
             cbIp = (int)bufPacket.getShort(startCurrentHeader + 2) & 0x0000FFFF;
-            idxLastIpByte = startCurrentHeader + cbIp;
+            //if cbIp is 0 there is a good chance that TSO is happening, we'er just going to guess that the packet is
+            // the length of the buffer
+            if (cbIp > 0) {
+                idxLastIpByte = startCurrentHeader + cbIp;
+            } else {
+                idxLastIpByte = cbPacket;
+            }
 
             final int wFragment = bufPacket.getShort(startCurrentHeader + 6);
             final boolean hasMoreFragments = (wFragment & 0x20) == 0x20;
@@ -212,7 +218,11 @@ public class PacketHandler {
 
                     }
                 }
-                temp = new JBuffer(contents);
+                if (contents.length > 0) {
+                    temp = new JBuffer(contents);
+                } else {
+                    temp = null;
+                }
                 meta = new PMetaData(source, msSinceEpoch, idxFrame, portSource, portDest, protocol,
                         ipSource, macSource, ipDest, macDestination, -1, contents.length, etherType,
                         -1, -1, ttl, -1, null);

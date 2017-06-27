@@ -4,15 +4,18 @@
         <Name>I-NET 2000-NPR</Name>
         <Author>Default</Author>
         <Description>This fingerprint looks for the evidence of I/NET 2000-NPR traffic.</Description>
-        <Tag>Original</Tag>
     </Header>
-    <Filter For="default">
+    <Filter For="I-NET 2000-NPR" Name="DstPort">
         <DstPort>5069</DstPort>
     </Filter>
-    <Payload For="default">
+    <Payload For="I-NET 2000-NPR">
+        <Description>This fingerprint looks for the evidence of I/NET 2000-NPR traffic.</Description>
         <Always>
-            <Return Confidence="1">
-                <Extract Name="I-NET-2000-NPR" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">I-NET 2000-NPR</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>

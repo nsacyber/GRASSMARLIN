@@ -88,7 +88,7 @@ public class LogicalNodeReportDialogFx extends Dialog {
                                     )
             );
         });
-        optSource.setOnAction(event -> {
+        optDestination.setOnAction(event -> {
             nodesFiltered.setPredicate(logicalNode ->
                             network.get().getEdgesInvolving(logicalNode).stream()
                                     .anyMatch(edge ->
