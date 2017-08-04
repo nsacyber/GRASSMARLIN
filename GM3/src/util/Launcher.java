@@ -78,17 +78,20 @@ public class Launcher {
             }
         }
 
-        try {
-            // If jnetpcap can't be found then loadLibrary will result in an exception
-            System.loadLibrary("jnetpcap");
-            Pcap.libVersion();
-        } catch (Error | Exception var3) {
-            //We won't be able to do offline pcap either, but there are no hooks (yet) to prevent this.
-            Logger.log(Launcher.class, Severity.Warning, "Unable to initialize JNetPCap; packet capture functionality will be disabled.");
-            allowPcap = false;
+        if(allowPcap) {
+            try {
+                // If jnetpcap can't be found then loadLibrary will result in an exception
+                System.loadLibrary("jnetpcap");
+                Pcap.libVersion();
+            } catch (Error | Exception var3) {
+                //We won't be able to do offline pcap either, but there are no hooks (yet) to prevent this.
+                Logger.log(Launcher.class, Severity.Warning, "Unable to initialize JNetPCap; packet capture functionality will be disabled.");
+                allowPcap = false;
+            }
         }
 
-        if(!Files.exists(Paths.get(Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC)))) {
+        String wiresharkPath = Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC);
+        if(wiresharkPath == null || !Files.exists(Paths.get(wiresharkPath))) {
             Logger.log(args, Severity.Warning, "Cannot locate Wireshark; please verify the value in the Tools -> Preferences menu.");
         }
 
