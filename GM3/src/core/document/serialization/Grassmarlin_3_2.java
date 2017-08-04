@@ -39,10 +39,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -72,6 +70,8 @@ public class Grassmarlin_3_2 {
         }
 
         try {
+            session.getPhysicalTopologyMapper().startLoading();
+
             Reader sessionReader = new InputStreamReader(inFile.getInputStream(sessionEntry), StandardCharsets.UTF_8);
             InputSource sessionSource = new InputSource(sessionReader);
             sessionSource.setEncoding("UTF-8");
@@ -107,6 +107,8 @@ public class Grassmarlin_3_2 {
             meshReader.close();
             meshReader = null;
             meshSource = null;
+
+            session.getPhysicalTopologyMapper().endLoading();
 
             // At this point the graphs have been restored and we now need to restore UI properties.
             //Modifying UI elements must happen in the UI thread.
@@ -651,6 +653,7 @@ public class Grassmarlin_3_2 {
         private boolean inNode;
         private Attributes nodeAttributes;
         private PhysicalNode currentNode;
+        private HashMap<String, String> groups;
 
         private boolean inGroup;
         private Attributes groupAttributes;
@@ -683,14 +686,14 @@ public class Grassmarlin_3_2 {
                     inNode = true;
                     if (inGraph && inNodes && inNode) {
                         nodeAttributes = new AttributesImpl(attributes);
-                        if (nodeAttributes != null) {
-                            currentNode = buildPhysicalNode(nodeAttributes, devices);
-                        }
                     }
                     break;
                 case "group":
                     inGroup = true;
                     groupAttributes = new AttributesImpl(attributes);
+                    if (groupAttributes != null && groups == null) {
+                        groups = new HashMap<>();
+                    }
                     break;
                 case "edges":
                     inEdges = true;
@@ -719,16 +722,20 @@ public class Grassmarlin_3_2 {
                     inNodes = false;
                     break;
                 case "node":
-                    if (inGraph && inNodes && inNode && currentNode != null) {
+                    if (inGraph && inNodes && inNode) {
+                        if (nodeAttributes != null) {
+                            currentNode = buildPhysicalNode(nodeAttributes, devices, groups);
+                        }
                         session.getPhysicalGraph().addNode(currentNode);
                     }
                     currentNode = null;
                     nodeAttributes = null;
+                    groups = null;
                     inNode = false;
                     break;
                 case "group":
-                    if (inGraph && inNodes && inNode && inGroup && currentNode != null && groupAttributes != null) {
-                        currentNode.getGroups().put(groupAttributes.getValue("name"), groupChars);
+                    if (inGraph && inNodes && inNode && inGroup && groupAttributes != null) {
+                        groups.put(groupAttributes.getValue("name"), groupChars);
                     }
                     groupAttributes = null;
                     groupChars = null;
@@ -753,16 +760,19 @@ public class Grassmarlin_3_2 {
         }
     }
 
-    private PhysicalNode buildPhysicalNode(Attributes nodeAttributes, HashMap<String, PhysicalDevice> devices) {
+    private PhysicalNode buildPhysicalNode(Attributes nodeAttributes, HashMap<String, PhysicalDevice> devices, Map<String, String> groups) {
         PhysicalNode node = null;
 
         switch(nodeAttributes.getValue("type")) {
             case "nic":
-                String[] deviceTokens = nodeAttributes.getValue("device").split(" ");
+                String[] deviceTokens = nodeAttributes.getValue("title").split(" ");
                 if (deviceTokens.length == 2) {
                     String macString = deviceTokens[1];
                     node = new PhysicalNic(new Mac(macString));
                     ((PhysicalNic) node).vendorProperty().setValue(nodeAttributes.getValue("vendor"));
+                    ((PhysicalNic) node).deviceProperty().setValue(nodeAttributes.getValue("device"));
+                    String vlans = groups.get(PhysicalNode.FIELD_VLAN);
+                    node.getVLans().addAll(Arrays.stream(vlans.split(", ")).map(vlan -> Integer.parseInt(vlan)).collect(Collectors.toList()));
                 }
                 break;
             case "port":
@@ -1208,9 +1218,11 @@ public class Grassmarlin_3_2 {
         double y = Double.parseDouble(cellAttributes.getValue("y"));
 
         Cell<?> cell = visualization.cellFor(nodeList.get(ref));
-        if (!(cell.layoutXProperty().isBound() && cell.layoutYProperty().isBound())) {
-            cell.setLayoutX(x);
-            cell.setLayoutY(y);
+        if (!(cell instanceof CellNic || cell instanceof CellPort)) {
+            if (!(cell.layoutXProperty().isBound() || cell.layoutYProperty().isBound())) {
+                cell.setLayoutX(x);
+                cell.setLayoutY(y);
+            }
         }
         cell.autoLayoutProperty().setValue(layout);
     }

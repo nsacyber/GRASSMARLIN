@@ -3,17 +3,34 @@
     <Header>
         <Name>DLIP</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of DLIP traffic.</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint looks for evidence of DLIP traffic.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="DLIP Src" Name="DLIP Src">
         <SrcPort>7201</SrcPort>
     </Filter>
-    <Payload For="default">
-        <Always>
-            <Return Confidence="1">
-                <Extract Name="DLIP" From="CURSOR_START" To="CURSOR_END"/>
+    <Filter For="DLIP Dst" Name="DLIP Dst">
+        <DstPort>7201</DstPort>
+    </Filter>	
+    <Payload For="DLIP Src">
+        <Description>Tags Intelligent Data Acquisition and Control</Description>
+		<Always>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">DLIP</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>
+    <Payload For="DLIP Dst">
+        <Description>Tags Intelligent Data Acquisition and Control</Description>
+		<Always>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">DLIP</Detail>
+                </Details>
+            </Return>
+        </Always>
+    </Payload>	
 </Fingerprint>

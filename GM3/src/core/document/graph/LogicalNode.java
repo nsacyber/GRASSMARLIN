@@ -212,7 +212,7 @@ public class LogicalNode implements INode<LogicalNode>, ObservableValue<LogicalN
     @Override
     public XmlElement toXml() {
         XmlElement xmlNode = INode.super.toXml();
-        if(mac != null) {
+        if (mac != null) {
             xmlNode.addAttribute("mac").setValue(formatMac(mac));
         }
 

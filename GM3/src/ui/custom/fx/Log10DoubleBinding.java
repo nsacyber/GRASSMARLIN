@@ -17,6 +17,6 @@ public class Log10DoubleBinding extends DoubleBinding {
 
     @Override
     public double computeValue() {
-        return Math.log10(source.getValue().doubleValue());
+        return Math.max(Math.log10(source.getValue().doubleValue()), 1);
     }
 }

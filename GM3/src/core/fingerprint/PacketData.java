@@ -99,7 +99,7 @@ public class PacketData {
             if (!bigEndian) {
                 ArrayUtils.reverse(bytes);
             }
-            ret = new BigInteger(bytes).intValue();
+            ret = new BigInteger(1, bytes).intValue();
         }
         return ret;
     }
@@ -111,7 +111,7 @@ public class PacketData {
             if (!bigEndian) {
                 ArrayUtils.reverse(bytes);
             }
-            ret = new BigInteger(bytes).intValue();
+            ret = new BigInteger(1, bytes).intValue();
         }
 
         return ret;
@@ -126,7 +126,11 @@ public class PacketData {
      */
     public int match(byte[] search, int offset, int length) {
         int ret = -1;
-        if (payload != null) {
+        // you can not look at data at negative indexes
+        if (offset < 0) {
+            offset = 0;
+        }
+        if (payload != null && search.length <= length) {
             int searchLength = search.length;
             if (searchLength > 0) {
                 int limit = Math.min(offset + length, payload.size()) - searchLength - offset;

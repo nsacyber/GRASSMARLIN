@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import ui.fingerprint.FingerPrintGui;
 import ui.fingerprint.payload.Endian;
 
 import java.util.ArrayList;
@@ -151,7 +152,7 @@ public class ExtractDialog extends Dialog<ExtractDialog> {
                 this.from = extract.getFrom();
                 this.to = extract.getTo();
                 this.maxLength = extract.getMaxLength();
-                this.endian = Endian.valueOf(extract.getEndian() != null ? extract.getEndian() : "BIG");
+                this.endian = extract.getEndian() != null ? Endian.valueOf(extract.getEndian()) : Endian.getDefault();
                 this.post = extract.getPost();
             }
 
@@ -219,7 +220,7 @@ public class ExtractDialog extends Dialog<ExtractDialog> {
             fromPositionField.textProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue == null || newValue.isEmpty()) {
                     fromPositionField.setText("0");
-                    fromPositionField.selectAll();
+                    FingerPrintGui.selectAll(fromPositionField);
                 } else {
                     try {
                         long index = Long.parseLong(newValue);
@@ -266,7 +267,7 @@ public class ExtractDialog extends Dialog<ExtractDialog> {
             toPositionField.textProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue == null || newValue.isEmpty()) {
                     toPositionField.setText("0");
-                    toPositionField.selectAll();
+                    FingerPrintGui.selectAll(toPositionField);
                 } else {
                     try {
                         long index = Long.parseLong(newValue);
@@ -289,7 +290,7 @@ public class ExtractDialog extends Dialog<ExtractDialog> {
 
             HBox maxLengthBox = new HBox(2);
             Label maxLengthLabel = new Label("Max Length:");
-            TextField maxLengthField = new TextField(Integer.toString(DEFAULT_MAX_LENGTH));
+            TextField maxLengthField = new TextField(Integer.toString(this.maxLength));
             maxLengthField.textProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue == null || newValue.isEmpty()) {
                     maxLengthField.setText("0");
@@ -299,6 +300,8 @@ public class ExtractDialog extends Dialog<ExtractDialog> {
                         int length = Integer.parseInt(newValue);
                         if (length < MIN_MAX_LENGTH || length > MAX_MAX_LENGTH) {
                             maxLengthField.setText(oldValue);
+                        } else {
+                            this.maxLength = length;
                         }
                     } catch (NumberFormatException e) {
                         maxLengthField.setText(oldValue);
@@ -312,7 +315,8 @@ public class ExtractDialog extends Dialog<ExtractDialog> {
             HBox endianBox = new HBox(2);
             Label endianLabel = new Label("Endian:");
             ChoiceBox<Endian> endianChoiceBox = new ChoiceBox<>(FXCollections.observableArrayList(Endian.values()));
-            endianChoiceBox.setValue(Endian.BIG);
+            endianChoiceBox.setValue(this.endian);
+            endianChoiceBox.valueProperty().addListener(observable -> this.endian = endianChoiceBox.getValue());
             endianBox.setAlignment(Pos.CENTER_LEFT);
             endianBox.getChildren().addAll(endianLabel, endianChoiceBox);
 

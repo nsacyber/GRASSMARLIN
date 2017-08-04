@@ -80,7 +80,7 @@ where methods that are used in GRASSMARLIN are declared private).
     <target name="compile" depends="gensrc-Fingerprinting" description="Compile sources to .class files">
         <mkdir dir="${build.classes.dir}"/>
 
-        <javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.classes.dir}" verbose="true" debug="false">
+        <javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.classes.dir}" verbose="true" debug="true">
             <src path="${gen.dir}"/>
             <classpath refid="lib.classpath"/>
         </javac>
@@ -226,11 +226,11 @@ where methods that are used in GRASSMARLIN are declared private).
             <arg value="${build.dir}\temp\grassmarlin-64.wixobj" />
         </exec>
 
-        <!-- Builds with live pcap disabled -->
+        <!-- Build with live pcap disabled (works on 32- and 64-bit) -->
         <echo message="Building Windows Installer with Live PCAP Disabled..." />
         <exec executable="${exec.candle}">
             <arg value="-dStagingPath=${build.app}" />
-            <arg value="-dLauncherFile=Installers\WindowsInstallers\GrassMarlin.bat" />
+            <arg value="-dLauncherFile=Installers\WindowsInstallers\GrassMarlin_NoPcap.bat" />
             <arg value="-o" />
             <arg value="${build.dir}\temp\grassmarlin-nolive.wixobj" />
             <arg value="Installers\WindowsInstallers\Windows.wix" />
@@ -303,7 +303,7 @@ where methods that are used in GRASSMARLIN are declared private).
         <echo message="Building Windows ZIP without Live PCAP..." />
         <zip destfile="${build.dir}/GrassMarlin-Win-NoLivePcap.zip">
             <zipfileset dir="${build.app}" excludes="**\iadgov.csvimport.jar,**\iadgov.sessioneventtest.jar" />
-            <zipfileset file="Installers/WindowsInstallers/GrassMarlin.bat" />
+            <zipfileset file="Installers/WindowsInstallers/GrassMarlin_NoPcap.bat" />
         </zip>
 
         <delete dir="${build.dir}/temp" />

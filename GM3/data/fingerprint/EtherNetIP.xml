@@ -3,20 +3,21 @@
     <Header>
         <Name>EtherNetIP</Name>
         <Author>Default</Author>
-        <Description>EthernetIP Traffic</Description>
+        <Description>This fingerprint identifies evidence of EtherNetIP traffic.</Description>
         <Tag>ETHERNETIP</Tag>
     </Header>
-    <Filter For="EtherNetIP UDP List Identity Response" Name="Filter Group 0">
+    <Filter For="EtherNetIP UDP List Identity Response" Name="UDP List">
         <TransportProtocol>17</TransportProtocol>
         <SrcPort>44818</SrcPort>
     </Filter>
-    <Filter For="Replier/Requester UDP" Name="Filter Group 1">
+    <Filter For="Replier/Requester UDP" Name="Dst">
         <DstPort>44818</DstPort>
     </Filter>
-    <Filter For="Replier/Requester UDP" Name="Filter Group 2">
+    <Filter For="Replier/Requester UDP" Name="Src">
         <SrcPort>44818</SrcPort>
     </Filter>
     <Payload For="Replier/Requester UDP">
+		<Description>Tags UDP replier/requester EtherNetIP traffic.</Description>
         <Always>
             <Return Direction="SOURCE" Confidence="5">
                 <Details>
@@ -27,6 +28,7 @@
         </Always>
     </Payload>
     <Payload For="EtherNetIP UDP List Identity Response">
+		<Description>Tags UDP identity EtherNetIP response traffic.</Description>
         <Always>
             <Return Direction="SOURCE" Confidence="5">
                 <Details>

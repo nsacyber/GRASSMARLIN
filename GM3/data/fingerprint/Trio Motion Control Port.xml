@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Fingerprint>
     <Header>
-        <Name>Trio Motion Control Port</Name>
+        <Name>Trio Motion Control</Name>
         <Author>Default</Author>
-        <Description>This fingerprint looks for the evidence of Trio Motion Control Port traffic.</Description>
-        <Tag>Original</Tag>
+        <Description>This fingerprint looks for evidence of Trio Motion Control Port traffic.</Description>
     </Header>
-    <Filter For="default">
+    <Filter For="Trio Motion Control" Name="DstPort">
         <DstPort>3240</DstPort>
     </Filter>
-    <Payload For="default">
+    <Payload For="Trio Motion Control">
+        <Description>Tags Trio Motion Control port traffic by destination port.</Description>
         <Always>
-            <Return Confidence="1">
-                <Extract Name="TRIOMOTION" From="CURSOR_START" To="CURSOR_END"/>
+            <Return Direction="SOURCE" Confidence="5">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="ICSProtocol">Trio Motion Control</Detail>
+                </Details>
             </Return>
         </Always>
     </Payload>

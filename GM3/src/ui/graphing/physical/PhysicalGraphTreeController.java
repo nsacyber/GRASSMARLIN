@@ -79,7 +79,7 @@ public class PhysicalGraphTreeController extends GraphTreeController<PhysicalNod
 
     @Override
     protected void initializeGroup(GraphTreeItem.GraphTreeGroupItem<PhysicalNode, PhysicalEdge> nodeGroup) {
-        String nameGroup = nodeGroup.getValue();
+        String nameGroup = nodeGroup.getName();
         TreeItem<String> root = rootClouds;
 
         if(devices.stream().filter(device -> device.nameProperty().get().equals(nameGroup)).findAny().isPresent()) {

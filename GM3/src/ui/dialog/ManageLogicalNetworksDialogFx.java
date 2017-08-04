@@ -18,17 +18,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ManageLogicalNetworksDialogFx extends Dialog {
+    private static ManageLogicalNetworksDialogFx instance = null;
+
     private final ListView<Cidr> viewCidrs;
     private final TextField txtNewCidr;
     private final Button btnAddCidr;
 
-    public ManageLogicalNetworksDialogFx() {
+    private ManageLogicalNetworksDialogFx() {
         viewCidrs = new ListView<>();
 
         txtNewCidr = new TextField("");
         btnAddCidr = new Button("Add CIDR");
 
         initComponents();
+    }
+
+    public static ManageLogicalNetworksDialogFx getInstance() {
+        if (instance == null) {
+            instance = new ManageLogicalNetworksDialogFx();
+        }
+
+        return instance;
     }
 
     private void initComponents() {

@@ -11,6 +11,11 @@ import javafx.geometry.Orientation;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import ui.EmbeddedIcons;
@@ -19,8 +24,10 @@ import ui.custom.fx.Chart;
 import ui.custom.fx.ChartPacketBytesOverTime;
 import ui.custom.fx.ScalableChartWrapper;
 import util.Cidr;
+import util.Csv;
 import util.Wireshark;
 
+import java.io.File;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -120,6 +127,7 @@ public class ConnectionDetailsDialogFx extends Dialog {
         SplitPane pane = new SplitPane();
         pane.setOrientation(Orientation.VERTICAL);
 
+        final VBox containerTable = new VBox();
         TableView<DetailLine> tbl = new TableView<>();
 
         TableColumn<DetailLine, ZonedDateTime> colTimestamp = new TableColumn<>("Timestamp");
@@ -168,7 +176,29 @@ public class ConnectionDetailsDialogFx extends Dialog {
         );
         tbl.setContextMenu(menuTbl);
 
-        pane.getItems().addAll(tbl, chartControl);
+        final HBox toolbarTable = new HBox();
+        final Pane spacerToolbar = new Pane();
+        HBox.setHgrow(spacerToolbar, Priority.ALWAYS);
+
+        final Button btnExportToCsv = new Button("Export CSV...", EmbeddedIcons.Vista_Save.getImage(16.0));
+        btnExportToCsv.setOnAction(event -> {
+            final FileChooser dlgSave = new FileChooser();
+            dlgSave.setTitle("Export To...");
+            dlgSave.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("CSV Files (*.csv)", "*.csv"),
+                    new FileChooser.ExtensionFilter("Data Files (*.csv, *.xls, *.xlsx, *.xml, *.prn, *ods)", "*.csv", "*.xls", "*.xlsx", "*.xml", "*.prn", "*.ods"),
+                    new FileChooser.ExtensionFilter("All Files", "*")
+            );
+
+            File result = dlgSave.showSaveDialog(this.getOwner());
+            if(result != null) {
+                Csv.ExportTableToFile(tbl, result);
+            }
+        });
+
+        toolbarTable.getChildren().addAll(spacerToolbar, btnExportToCsv);
+        containerTable.getChildren().addAll(toolbarTable, tbl);
+        pane.getItems().addAll(containerTable, chartControl);
         this.getDialogPane().setContent(pane);
         this.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
     }
@@ -199,6 +229,7 @@ public class ConnectionDetailsDialogFx extends Dialog {
         chartControl.suspendLayout(true);
         try {
             chartControl.clearSeries();
+            chartControl.zoomReset();
 
             if (rootNew == null) {
                 return;

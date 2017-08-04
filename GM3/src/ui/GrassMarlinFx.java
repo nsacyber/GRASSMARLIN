@@ -20,6 +20,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.When;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -33,7 +34,8 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.apache.commons.lang3.SystemUtils;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import ui.custom.fx.ActiveButton;
 import ui.custom.fx.ActiveMenuItem;
 import ui.custom.fx.DynamicSubMenu;
@@ -46,7 +48,8 @@ import ui.graphing.graphs.*;
 import util.Launcher;
 import util.Plugin;
 
-import java.awt.*;
+import java.awt.Toolkit;
+import java.awt.Desktop;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -124,7 +127,7 @@ public class GrassMarlinFx extends Application{
         tabController = new TabController();
         fields = new BorderPane();
 
-        dlgManageLogicalNetworks = new ManageLogicalNetworksDialogFx();
+        dlgManageLogicalNetworks = ManageLogicalNetworksDialogFx.getInstance();
 
         // Most of the initialization is handled in the start method.
     }
@@ -152,6 +155,16 @@ public class GrassMarlinFx extends Application{
         Configuration.setPreferenceString(Configuration.Fields.LAST_RUN_VERSION, Version.APPLICATION_VERSION);
 
         newDocument();
+
+        stage.setOnCloseRequest(event -> {
+            if (document.get().isDirty()) {
+                event.consume();
+                CheckSaveDocument(() -> {
+                    document.get().dirtyProperty().setValue(false);
+                    javafx.event.Event.fireEvent(stage, new WindowEvent((Window) event.getTarget(), event.getEventType()));
+                });
+            }
+        });
 
         fields.setOnDragOver(event -> {
             if (event.getGestureSource() != this && event.getDragboard().hasFiles()) {
@@ -260,6 +273,7 @@ public class GrassMarlinFx extends Application{
                                 new SeparatorMenuItem(),
                                 new ActiveMenuItem("_Clear Topology", EmbeddedIcons.Vista_Refresh, (event) -> {
                                     document.get().clearTopology();
+                                    tabController.clearTopology();
                                 }).setAccelerator(KeyCodeCombination.CONTROL_DOWN, KeyCode.X),
                                 new SeparatorMenuItem(),
                                 new ActiveMenuItem("_Import Files...", EmbeddedIcons.Vista_Import, GrassMarlinFx.this::Handle_ShowImportDialog).setAccelerator(KeyCodeCombination.CONTROL_DOWN, KeyCode.I),
@@ -270,7 +284,7 @@ public class GrassMarlinFx extends Application{
                                 }),
                                 new SeparatorMenuItem(),
                                 new ActiveMenuItem("E_xit", (action) -> {
-                                    stage.close();
+                                    Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
                                 })
                         );
                     }
@@ -287,8 +301,8 @@ public class GrassMarlinFx extends Application{
                                                 pathLog
                                         });
                                         Logger.log(this, Severity.Success, "Displaying log file (" + pathLog + ") using " + viewerLog);
-                                    } catch(IOException | NullPointerException ex) {
-                                        Logger.log(this, Severity.Error, "Unable to display log file; Ensure the Text File viewer is correctly set in the Preferences (" + ex.getMessage() + ")");
+                                    } catch(IOException ex) {
+                                        Logger.log(this, Severity.Error, "Unable to display log file: " + ex.getMessage());
                                     }
                                 }),
                                 new SeparatorMenuItem(),
@@ -298,7 +312,7 @@ public class GrassMarlinFx extends Application{
                                 new ActiveMenuItem("Logical _Connections Report", EmbeddedIcons.Vista_Report, (event) -> {
                                     new LogicalEdgeReportDialogFx(document.get().getLogicalGraph()).show();
                                 }),
-                                new ActiveMenuItem("Inter_group Connections Report", EmbeddedIcons.Vista_Report, event -> {
+                                new ActiveMenuItem("Inter-_Group Connections Report", EmbeddedIcons.Vista_Report, event -> {
                                     new IntergroupConnectionReportDialogFx<>(document.get().getLogicalGraph()).show();
                                 }),
                                 new SeparatorMenuItem(),
@@ -392,12 +406,16 @@ public class GrassMarlinFx extends Application{
         header.getChildren().add(menu);
 
         cbPcapDevices = new ChoiceBox<>();
-        cbPcapDevices.setItems(PcapDeviceList.get());
-        if(cbPcapDevices.getItems().size() == 0) {
-            //If there are no pcap devices, disable pcap.
-            pcapAvailable.set(false);
+        if(pcapAvailable.get()) {
+            cbPcapDevices.setItems(PcapDeviceList.get());
+            if (cbPcapDevices.getItems().size() == 0) {
+                //If there are no pcap devices, disable pcap.
+                pcapAvailable.set(false);
+            } else {
+                cbPcapDevices.getSelectionModel().select(0);
+            }
         } else {
-            cbPcapDevices.getSelectionModel().select(0);
+            cbPcapDevices.setDisable(true);
         }
 
         Pane paneToolbarSpacer = new Pane();
@@ -534,30 +552,19 @@ public class GrassMarlinFx extends Application{
             String exec = Configuration.getPreferenceString(Configuration.Fields.PDF_VIEWER_EXEC);
             if (exec != null && !exec.isEmpty()) {
                 // If the PDF Viewer path has been set, then use it, assuming that a single parameter for the PDF to open is accepted.
-                if(!Files.exists(Paths.get(exec))) {
-                    Logger.log(this, Severity.Error, "Error opening User Guide: The PDF viewer specified in the PReferences dialog does not exist.");
-                    return;
-                }
                 try {
                     Runtime.getRuntime().exec(new String[]{exec, path});
                 } catch (IOException ex) {
-                    Logger.log(this, Severity.Error, "Error opening User Guide: " + ex.getMessage());
+                    Logger.log(this, Severity.Error, "Error opening User guide: " + ex.getMessage());
                 }
             } else {
                 //PDF Viewer isn't set, so try desktop execute
-                if(SystemUtils.IS_OS_WINDOWS) {
-                    if (Desktop.isDesktopSupported()) {
-                        Logger.log(this, Severity.Warning, "PDF Viewer needs to be set in Preferences.  Attempting fallback.");
-                        try {
-                            Desktop.getDesktop().open(fileMisc);
-                            return;
-                        } catch (IOException ex) {
-                            Logger.log(Desktop.class, Severity.Error, "Unable to open User Guide (" + fileMisc.getPath() + "): " + ex.getMessage());
-                            return;
-                        }
-                    }
+                Logger.log(this, Severity.Warning, "PDF Viewer needs to be set in Preferences.  Attempting fallback.");
+                try {
+                    Desktop.getDesktop().open(fileMisc);
+                } catch (IOException ex) {
+                    Logger.log(Desktop.class, Severity.Error, "Unable to open User Guide (" + fileMisc.getPath() + "): " + ex.getMessage());
                 }
-                Logger.log(this, Severity.Warning, "PDF Viewer needs to be set in Preferences.  The user guide can be found at " + path + ".");
             }
         } catch(NullPointerException ex) {
             Logger.log(this, Severity.Error, "Unable to locate User Guide.");
@@ -569,7 +576,6 @@ public class GrassMarlinFx extends Application{
      * If the user elects to save, if a filename must be specified, then prompt as per "Save As...", otherwise Save
      * If the user declines to save, then return.
      * If the user cancels at any point, abort the save and return false.
-     * @return True if the user did not cancel, false otherwise.
      */
     public void CheckSaveDocument(Runnable onSuccess) {
         if(document.get().isDirty()) {

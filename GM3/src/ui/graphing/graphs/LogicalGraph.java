@@ -10,6 +10,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import ui.custom.fx.ActiveMenuItem;
 import ui.dialog.ConnectionDetailsDialogFx;
+import ui.dialog.ManageLogicalNetworksDialogFx;
 import ui.graphing.Cell;
 import ui.graphing.FactoryLayoutableCells;
 import ui.graphing.FactoryTreeItemsLogical;
@@ -22,7 +23,6 @@ import util.Cidr;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.zip.ZipOutputStream;
 
 public class LogicalGraph extends Graph<LogicalNode, LogicalEdge> {
@@ -88,23 +88,7 @@ public class LogicalGraph extends Graph<LogicalNode, LogicalEdge> {
         });
 
         MenuItem miAddSubnet = new ActiveMenuItem("Add Subnet Group", event -> {
-            TextInputDialog dlgNewCidr = new TextInputDialog("Add Cidr");
-            Optional<String> result = dlgNewCidr.showAndWait();
-            if(result.isPresent()) {
-                String txtNew = result.get();
-                try {
-                    Cidr cidrNew = new Cidr(txtNew);
-                    if (!cidrs.add(cidrNew)) {
-                        for(Cidr cidr : cidrs) {
-                            if(cidr.overlaps(cidrNew)) {
-                                Logger.log(this, Severity.Error, "Failed: " + txtNew + " conflicts with " + cidr.toString());
-                            }
-                        }
-                    }
-                } catch(Exception ex) {
-                    Logger.log(this, Severity.Error, "Unable to add Cidr: " + ex.getMessage());
-                }
-            }
+            ManageLogicalNetworksDialogFx.getInstance().showAndWait();
         });
         menuGraph.add(miAddSubnet);
     }

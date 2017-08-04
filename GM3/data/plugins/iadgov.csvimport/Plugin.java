@@ -5,6 +5,7 @@ import javafx.scene.control.MenuItem;
 import java.util.ArrayList;
 import java.util.Collection;
 
+
 /**
  * A plugin will be loaded by GrassMarlin if:
  *  1) The plugin is contained in a jar file located in the plugins directory

@@ -1,5 +1,7 @@
 package ui;
 
+import com.sun.javafx.scene.control.behavior.TabPaneBehavior;
+import com.sun.javafx.scene.control.skin.TabPaneSkin;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Tab;
@@ -10,7 +12,9 @@ import ui.graphing.Graph;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The TabController is responsible for managing the Tabs displayed in the main UI.
@@ -84,6 +88,24 @@ public class TabController {
         graphFromTabs.clear();
         //Change tabs last since the events will fire to update the tree.
         paneTabs.getTabs().clear();
+    }
+
+    public void clearTopology() {
+        //Get all tabs that are closeable
+        List<Tab> closable = paneTabs.getTabs().stream()
+                .filter(tab -> tab.isClosable())
+                .collect(Collectors.toList());
+        //remove graphs
+        closable.forEach(tab -> graphFromTabs.remove(tab));
+        //close tabs
+        closable.forEach(tab -> {
+            if (tab.getTabPane().getSkin() instanceof TabPaneSkin) {
+                TabPaneBehavior behavior = ((TabPaneSkin) tab.getTabPane().getSkin()).getBehavior();
+                if (behavior.canCloseTab(tab)) {
+                    behavior.closeTab(tab);
+                }
+            }
+        });
     }
 
     public Collection<Graph> getGraphs() {

@@ -9,20 +9,21 @@ import javafx.scene.layout.HBox;
 import ui.fingerprint.FingerPrintGui;
 
 import javax.xml.bind.JAXBElement;
+import java.math.BigInteger;
 
-public class WindowFilter implements Filter<Short> {
-    private final static int MAX_VALUE = 255;
+public class WindowFilter implements Filter<BigInteger> {
+    private final static int MAX_VALUE = 1073725440;
     private final static int MIN_VALUE = 0;
 
     ObjectFactory factory;
-    short value;
-    SimpleObjectProperty<JAXBElement<Short>> element;
+    BigInteger value;
+    SimpleObjectProperty<JAXBElement<BigInteger>> element;
 
-    public WindowFilter(JAXBElement<Short> value) {
+    public WindowFilter(JAXBElement<BigInteger> value) {
         factory = new ObjectFactory();
         element = new SimpleObjectProperty<>();
         if (null == value) {
-            this.value = 0;
+            this.value = new BigInteger("0");
             element.setValue(factory.createFingerprintFilterWindow(this.value));
         } else {
             this.value = value.getValue();
@@ -40,14 +41,14 @@ public class WindowFilter implements Filter<Short> {
         HBox input = new HBox();
 
         Label windowLabel = new Label("Value:");
-        TextField windowField = new TextField(Short.toString(value));
+        TextField windowField = new TextField(value.toString());
 
         windowField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!oldValue.equals(newValue)) {
                 //don't allow wrong entries
                 try {
-                    short newWindow = Short.parseShort(newValue);
-                    if (newWindow > MAX_VALUE || newWindow < MIN_VALUE) {
+                    BigInteger newWindow = new BigInteger(newValue);
+                    if (newWindow.intValue() > MAX_VALUE || newWindow.intValue() < MIN_VALUE) {
                         windowField.setText(oldValue);
                     } else {
                         value = newWindow;
@@ -83,7 +84,7 @@ public class WindowFilter implements Filter<Short> {
     }
 
     @Override
-    public SimpleObjectProperty<JAXBElement<Short>> elementProperty() {
+    public SimpleObjectProperty<JAXBElement<BigInteger>> elementProperty() {
         return element;
     }
 }

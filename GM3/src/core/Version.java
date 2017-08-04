@@ -9,13 +9,24 @@ import java.util.List;
 import java.util.Map;
 
 public final class Version {
-    public static final String APPLICATION_VERSION = "3.2.0";
+    public static final String APPLICATION_VERSION = "3.2.1";
     public static final String APPLICATION_TITLE = "GrassMarlin " + APPLICATION_VERSION;
-    public static final int APPLICATION_REVISION = 2925;
+    public static final int APPLICATION_REVISION = 26;
     public static final String FILENAME_USER_GUIDE = "GRASSMARLIN_User_Guide3.2.pdf";
 
     public static final Map<String, List<String>> PATCH_NOTES = new ReadOnlyMapWrapper<>(new ObservableMapWrapper<>(new LinkedHashMap<String, List<String>>() {
         {
+            this.put("3.2.1", Arrays.asList(
+                    "While porting the Fingerprinting engine to version 3.3, a few low-risk-high-impact optimizations were found which were backported to 3.2.1; fingerprinting throughput is roughly doubled as a result.",
+                    "Following the release of GrassMarlin 3.2.0 we have, with help from a wide base of users, identified and fixed several bugs.",
+                    "Importing PcapNg files had some issues that have been addressed, specifically with ARP and files created with a certain Endianness.",
+                    "Many bugs were fixed in Fingerprinting.",
+                    "Additional Fingerprints have been added and existing Fingerprints have been updated.",
+                    "If Wireshark is not auto-detected (or manually configured) properly, the application will no longer crash.",
+                    "Improved support for builds that disable Live Pcap.",
+                    "The packet list in the View Frames Dialog can now be exported to CSV.",
+                    "The chart on the View Frames Dialog can be exported to SVG from the context menu; the chart component does not scale, it is effectively taken as a screenshot of the current display.  It is slightly better than screenshot-and-crop, though."
+            ));
             this.put("3.2.0", Arrays.asList(
                     "KNOWN ISSUES:",
                     "Some context menu items are missing from the Physical Graph tree view; the missing commands are available from the Visualization context menu.",

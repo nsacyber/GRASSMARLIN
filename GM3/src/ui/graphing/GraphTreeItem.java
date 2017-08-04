@@ -85,6 +85,7 @@ public abstract class GraphTreeItem<TNode extends INode<TNode>, TEdge extends IE
     }
 
     private boolean initialized = false;
+    private String name;
 
     protected GraphTreeItem() {
         super();
@@ -92,7 +93,13 @@ public abstract class GraphTreeItem<TNode extends INode<TNode>, TEdge extends IE
     protected GraphTreeItem(String title, EmbeddedIcons image) {
         super(title, image == null ? null : image.getImage(16.0));
 
+        this.name = title;
+
         valueProperty().bind(new ReadOnlyStringWrapper(title).concat(" (").concat(new ListSizeBinding(getChildren())).concat(" item[s])"));
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public boolean requiresInitialization() {
