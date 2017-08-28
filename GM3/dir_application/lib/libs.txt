@@ -1,0 +1,2 @@
+Antlr 4.5 is required.
+JNetPcap is required if live pcap is to be enabled.  The native component of JNetPcap should be in the same directory as GrassMarlin.jar.

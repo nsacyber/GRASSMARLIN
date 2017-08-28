@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>DLIP</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of DLIP traffic.</Description>
+        <Tag>Original</Tag>
+    </Header>
+    <Filter For="default">
+        <SrcPort>7201</SrcPort>
+    </Filter>
+    <Payload For="default">
+        <Always>
+            <Return Confidence="1">
+                <Extract Name="DLIP" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>Siemens AuD SCP</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of Siemens AuD SCP traffic.</Description>
+        <Tag>Original</Tag>
+    </Header>
+    <Filter For="default">
+        <DstPort>3820</DstPort>
+    </Filter>
+    <Payload For="default">
+        <Always>
+            <Return Confidence="3">
+                <Extract Name="SCP" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>

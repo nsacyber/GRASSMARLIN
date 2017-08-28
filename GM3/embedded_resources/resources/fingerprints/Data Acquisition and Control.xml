@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>Data Acquisition and Control</Name>
+        <Author>Default</Author>
+        <Description>Data Acquisition and Control</Description>
+        <Tag>Original</Tag>
+    </Header>
+    <Filter For="default">
+        <DstPort>3881</DstPort>
+    </Filter>
+    <Payload For="default">
+        <Always>
+            <Return Confidence="1">
+                <Extract Name="IDAC" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>CTI</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of CTI Program Load traffic.This fingerprint looks for the evidence of CTI System Msg traffic.</Description>
+    </Header>
+    <Filter For=" Program Load">
+        <DstPort>4452</DstPort>
+    </Filter>
+    <Filter For=" System Message">
+        <DstPort>4451</DstPort>
+    </Filter>
+    <Payload For=" Program Load">
+        <Always>
+            <Return Confidence="1">
+                <Extract Name="CTIPROGRAMLOAD" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+    <Payload For=" System Message">
+        <Always>
+            <Return Confidence="1">
+                <Extract Name="CTISYSTEMMSG" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>
