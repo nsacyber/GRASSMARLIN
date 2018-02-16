@@ -1,0 +1,24 @@
+== VM Arguments:
+Basic Options:
+-Dnio.mx=3gb -Dnio=512mb -server -d64 -Xms6g -Xmx6g -XX:+UseG1GC -XX:+DisableExplicitGC -XX:NewSize=3072m -XX:MaxGCPauseMillis=2000
+
+Detailed UI Stuff:
+-Dprism.verbose=true
+
+== Application parameters:
+Enable Develiper Menus:
+-iacceptallresponsibilityforwhatiamabouttodo
+
+Set UI Mode:
+-ui (DIAGNOSTIC|CONSOLE|SDI)
+CONFIGURATION option is not implemented yet, but will be.
+
+Application Flags (disabled unless explicitly enabled):
+-allowPlugins
+-allowActiveScanning
+-allowLivePcap
+
+
+Dev SDI:
+-Dprism.verbose=true -Dnio.mx=3gb -Dnio=512mb -server -d64 -Xms6g -Xmx6g -XX:+UseG1GC -XX:+DisableExplicitGC -XX:NewSize=3072m -XX:MaxGCPauseMillis=2000
+-ui SDI -iacceptallresponsibilityforwhatiamabouttodo

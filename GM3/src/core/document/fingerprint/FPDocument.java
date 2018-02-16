@@ -342,14 +342,12 @@ public class FPDocument {
             Optional<Fingerprint.Payload> payload = fpState.get().getFingerprint().getPayload().stream()
                     .filter(pl -> pl.getFor().equals(payloadName))
                     .findFirst();
-
             if (payload.isPresent()) {
                 payload.get().setDescription(description);
                 updated = true;
                 fpState.get().dirtyProperty().set(true);
             }
         }
-
         return updated;
     }
 

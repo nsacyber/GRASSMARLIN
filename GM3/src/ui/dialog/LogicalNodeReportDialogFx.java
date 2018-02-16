@@ -172,6 +172,7 @@ public class LogicalNodeReportDialogFx extends Dialog {
 
     protected void Handle_ColumnSelectorShowing(Event event) {
         List<String> allFields = findAllFieldNames();
+        allFields.sort(String::compareTo);
         allFields.removeAll(activeColumns.keySet());
         ((ComboBox<String>)event.getTarget()).getItems().clear();
         ((ComboBox<String>)event.getTarget()).getItems().addAll(allFields);

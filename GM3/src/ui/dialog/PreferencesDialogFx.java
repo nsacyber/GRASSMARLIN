@@ -219,14 +219,14 @@ public class PreferencesDialogFx extends Dialog<ButtonType> {
     public Map<Configuration.Fields, String> getUpdatedValues() {
         HashMap<Configuration.Fields, String> updatedValues = new HashMap<>();
 
-        if(Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC) == null || !pathWireshark.get().equals(Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC))) {
-            updatedValues.put(Configuration.Fields.WIRESHARK_EXEC, pathWireshark.get().equals("") ? null : pathWireshark.get());
+        if(pathWireshark.get() == null || !pathWireshark.get().equals(Configuration.getPreferenceString(Configuration.Fields.WIRESHARK_EXEC))) {
+            updatedValues.put(Configuration.Fields.WIRESHARK_EXEC, pathWireshark.get());
         }
-        if(Configuration.getPreferenceString(Configuration.Fields.TEXT_EDITOR_EXEC) == null|| !pathTextEditor.get().equals(Configuration.getPreferenceString(Configuration.Fields.TEXT_EDITOR_EXEC))) {
-            updatedValues.put(Configuration.Fields.TEXT_EDITOR_EXEC, pathTextEditor.get().equals("") ? null : pathTextEditor.get());
+        if(pathTextEditor.get() == null || !pathTextEditor.get().equals(Configuration.getPreferenceString(Configuration.Fields.TEXT_EDITOR_EXEC))) {
+            updatedValues.put(Configuration.Fields.TEXT_EDITOR_EXEC, pathTextEditor.get());
         }
-        if(Configuration.getPreferenceString(Configuration.Fields.PDF_VIEWER_EXEC) == null || !pathPdfViewer.get().equals(Configuration.getPreferenceString(Configuration.Fields.PDF_VIEWER_EXEC))) {
-            updatedValues.put(Configuration.Fields.PDF_VIEWER_EXEC, pathPdfViewer.get().equals("") ? null : pathWireshark.get());
+        if(pathPdfViewer.get() == null || !pathPdfViewer.get().equals(Configuration.getPreferenceString(Configuration.Fields.PDF_VIEWER_EXEC))) {
+            updatedValues.put(Configuration.Fields.PDF_VIEWER_EXEC, pathPdfViewer.get());
         }
 
         // Colors give AARRGGBB, we want only RGB

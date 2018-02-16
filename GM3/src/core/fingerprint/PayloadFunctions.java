@@ -96,10 +96,10 @@ public class PayloadFunctions {
     }
 
     private static int calculate(int input, String expression) {
+        expression = expression.replace("x", Integer.toString(input));
+
         CalcLexer lexer = new CalcLexer(new ANTLRInputStream(expression));
         CalcParser parser = new CalcParser(new CommonTokenStream(lexer));
-
-        expression.replace("x", Integer.toString(input));
 
         return eval(parser.expr());
     }

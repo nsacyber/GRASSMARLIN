@@ -79,7 +79,6 @@ public abstract class ProgressTask extends Dialog<ButtonType> {
                     Platform.runLater(this::handleSuccess);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 if (Platform.isFxApplicationThread()) {
                     this.handleFailure();
                 } else {

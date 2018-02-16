@@ -23,6 +23,7 @@ import util.Cidr;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipOutputStream;
 
 public class LogicalGraph extends Graph<LogicalNode, LogicalEdge> {

@@ -22,6 +22,7 @@ public class LogicalNode implements INode<LogicalNode>, ObservableValue<LogicalN
     public static final String GROUP_COUNTRY = "Country";
     public static final String GROUP_ROLE = "Role";
     public static final String GROUP_CATEGORY = "Category";
+    public static final String GROUP_OS = "Operating System";
 
 
     private ExpressionHelper<LogicalNode> helper = null;
@@ -212,7 +213,7 @@ public class LogicalNode implements INode<LogicalNode>, ObservableValue<LogicalN
     @Override
     public XmlElement toXml() {
         XmlElement xmlNode = INode.super.toXml();
-        if (mac != null) {
+        if(mac != null) {
             xmlNode.addAttribute("mac").setValue(formatMac(mac));
         }
 

@@ -9,13 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 public final class Version {
-    public static final String APPLICATION_VERSION = "3.2.1";
+    public static final String APPLICATION_VERSION = "3.2.2";
     public static final String APPLICATION_TITLE = "GrassMarlin " + APPLICATION_VERSION;
-    public static final int APPLICATION_REVISION = 26;
+    public static final int APPLICATION_REVISION = 455;
     public static final String FILENAME_USER_GUIDE = "GRASSMARLIN_User_Guide3.2.pdf";
 
     public static final Map<String, List<String>> PATCH_NOTES = new ReadOnlyMapWrapper<>(new ObservableMapWrapper<>(new LinkedHashMap<String, List<String>>() {
         {
+            this.put("3.2.2", Arrays.asList(
+                    "Added the ability to group by OS.",
+                    "Made loading saved sessions more robust.",
+                    "Fixed reported bug that prevented a fingerprint from extracting the last byte of a packet",
+                    "Fixed reported bug where the CSV export did not handle line breaks correctly"
+            ));
             this.put("3.2.1", Arrays.asList(
                     "While porting the Fingerprinting engine to version 3.3, a few low-risk-high-impact optimizations were found which were backported to 3.2.1; fingerprinting throughput is roughly doubled as a result.",
                     "Following the release of GrassMarlin 3.2.0 we have, with help from a wide base of users, identified and fixed several bugs.",

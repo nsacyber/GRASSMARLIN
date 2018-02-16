@@ -24,8 +24,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class ScalableChartWrapper extends GridPane {
     protected class LegendEntry extends HBox {

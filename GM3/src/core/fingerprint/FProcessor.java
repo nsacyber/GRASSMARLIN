@@ -42,6 +42,7 @@ public class FProcessor {
 
         public UnpackedFilterGroup(String payloadName, List<UnpackedFilter<?>> filters) {
             this.payloadName = payloadName;
+
             this.filters = filters;
         }
 
@@ -60,7 +61,6 @@ public class FProcessor {
     public FProcessor(List<Fingerprint> runningFingerprints) {
         this.fingerprints = Collections.unmodifiableList(new ArrayList<>(runningFingerprints));
         this.filtersByPayload = unpackFilters(this.fingerprints);
-
     }
 
     private synchronized static Map<Fingerprint, Map<String, List<UnpackedFilterGroup>>> unpackFilters(List<Fingerprint> fingerprints) {
@@ -76,7 +76,7 @@ public class FProcessor {
                                             filter = new UnpackedFilter<>(Filter.FilterType.ACK, (Long) element.getValue());
                                             break;
                                         case DSIZE:
-                                            filter = new UnpackedFilter<>(Filter.FilterType.DSIZE, (Integer) element.getValue());
+                                            filter = new UnpackedFilter<>(Filter.FilterType.DSIZE, (Integer)element.getValue());
                                             break;
                                         case DSIZEWITHIN:
                                             filter = new UnpackedFilter<>(Filter.FilterType.DSIZEWITHIN, (Fingerprint.Filter.DsizeWithin) element.getValue());
@@ -112,6 +112,7 @@ public class FProcessor {
                                             filter = new UnpackedFilter<>(Filter.FilterType.WINDOW, (Integer) element.getValue());
                                             break;
                                     }
+
                                     return filter;
                                 })
                                 .filter(filter -> filter != null)
@@ -120,6 +121,7 @@ public class FProcessor {
                         return new UnpackedFilterGroup(group.getFor(), filters);
                     })
                     .collect(Collectors.groupingBy(UnpackedFilterGroup::getFor));
+
 
             returnMap.put(fp, groupByPayload);
         }

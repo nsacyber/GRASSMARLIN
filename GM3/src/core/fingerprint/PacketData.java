@@ -126,7 +126,7 @@ public class PacketData {
      */
     public int match(byte[] search, int offset, int length) {
         int ret = -1;
-        // you can not look at data at negative indexes
+        // can not look for data at negative indexes
         if (offset < 0) {
             offset = 0;
         }
@@ -157,7 +157,7 @@ public class PacketData {
     public byte[] extract(int from, int to, int length) {
         byte[] ret = new byte[0];
 
-        if (from >= 0 && from < payload.size() && to >= 0 && to < payload.size()) {
+        if (from >= 0 && from <= payload.size() && to >= 0 && to <= payload.size()) {
             int start = Math.min(from, to);
             int end = Math.min(start + length, Math.max(to, from));
 

@@ -734,7 +734,7 @@ public class Grassmarlin_3_2 {
                     inNode = false;
                     break;
                 case "group":
-                    if (inGraph && inNodes && inNode && inGroup && groupAttributes != null) {
+                    if (inGraph && inNodes && inNode && inGroup && currentNode != null && groupAttributes != null) {
                         groups.put(groupAttributes.getValue("name"), groupChars);
                     }
                     groupAttributes = null;

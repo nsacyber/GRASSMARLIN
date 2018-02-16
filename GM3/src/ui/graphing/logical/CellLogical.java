@@ -78,6 +78,22 @@ public class CellLogical extends Cell<LogicalNode> {
                 }
             }
         }
+        final String operatingSystems = groups.get(LogicalNode.GROUP_OS);
+        if(operatingSystems != null) {
+            for(String os : operatingSystems.split("\\n")) {
+                switch(os.toUpperCase()) {
+                    case "WINDOWS":
+                        iconsExternal.add(EmbeddedIcons.Windows);
+                        break;
+                    case "LINUX":
+                        iconsExternal.add(EmbeddedIcons.Penguin);
+                        break;
+                    default:
+                }
+            }
+        }
+
+
         //Check for broadcast address for this network.
         final Cidr ip = node.getIp();
         final Cidr net = node.networkProperty().get();

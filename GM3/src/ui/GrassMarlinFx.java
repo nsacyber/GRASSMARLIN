@@ -36,6 +36,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import org.apache.commons.lang3.SystemUtils;
 import ui.custom.fx.ActiveButton;
 import ui.custom.fx.ActiveMenuItem;
 import ui.custom.fx.DynamicSubMenu;
@@ -301,8 +302,8 @@ public class GrassMarlinFx extends Application{
                                                 pathLog
                                         });
                                         Logger.log(this, Severity.Success, "Displaying log file (" + pathLog + ") using " + viewerLog);
-                                    } catch(IOException ex) {
-                                        Logger.log(this, Severity.Error, "Unable to display log file: " + ex.getMessage());
+                                    } catch(IOException | NullPointerException ex) {
+                                        Logger.log(this, Severity.Error, "Unable to display log file; Ensure the Text File viewer is correctly set in the Preferences (" + ex.getMessage() + ")");
                                     }
                                 }),
                                 new SeparatorMenuItem(),
@@ -552,19 +553,30 @@ public class GrassMarlinFx extends Application{
             String exec = Configuration.getPreferenceString(Configuration.Fields.PDF_VIEWER_EXEC);
             if (exec != null && !exec.isEmpty()) {
                 // If the PDF Viewer path has been set, then use it, assuming that a single parameter for the PDF to open is accepted.
+                if(!Files.exists(Paths.get(exec))) {
+                    Logger.log(this, Severity.Error, "Error opening User Guide: The PDF viewer specified in the PReferences dialog does not exist.");
+                    return;
+                }
                 try {
                     Runtime.getRuntime().exec(new String[]{exec, path});
                 } catch (IOException ex) {
-                    Logger.log(this, Severity.Error, "Error opening User guide: " + ex.getMessage());
+                    Logger.log(this, Severity.Error, "Error opening User Guide: " + ex.getMessage());
                 }
             } else {
                 //PDF Viewer isn't set, so try desktop execute
-                Logger.log(this, Severity.Warning, "PDF Viewer needs to be set in Preferences.  Attempting fallback.");
-                try {
-                    Desktop.getDesktop().open(fileMisc);
-                } catch (IOException ex) {
-                    Logger.log(Desktop.class, Severity.Error, "Unable to open User Guide (" + fileMisc.getPath() + "): " + ex.getMessage());
+                if(SystemUtils.IS_OS_WINDOWS) {
+                    if (Desktop.isDesktopSupported()) {
+                        Logger.log(this, Severity.Warning, "PDF Viewer needs to be set in Preferences.  Attempting fallback.");
+                        try {
+                            Desktop.getDesktop().open(fileMisc);
+                            return;
+                        } catch (IOException ex) {
+                            Logger.log(Desktop.class, Severity.Error, "Unable to open User Guide (" + fileMisc.getPath() + "): " + ex.getMessage());
+                            return;
+                        }
+                    }
                 }
+                Logger.log(this, Severity.Warning, "PDF Viewer needs to be set in Preferences.  The user guide can be found at " + path + ".");
             }
         } catch(NullPointerException ex) {
             Logger.log(this, Severity.Error, "Unable to locate User Guide.");
@@ -576,6 +588,7 @@ public class GrassMarlinFx extends Application{
      * If the user elects to save, if a filename must be specified, then prompt as per "Save As...", otherwise Save
      * If the user declines to save, then return.
      * If the user cancels at any point, abort the save and return false.
+     * @return True if the user did not cancel, false otherwise.
      */
     public void CheckSaveDocument(Runnable onSuccess) {
         if(document.get().isDirty()) {

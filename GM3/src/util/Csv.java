@@ -27,8 +27,8 @@ public abstract class Csv {
     }
 
     public static String fieldFromString(String text) {
-        if (text.startsWith("\"") || text.contains(",")) {
-            return "\"" + text.replace("\"", "\"\"") + "\"";
+        if (text.startsWith("\"") || text.contains(",") || text.contains("\r") || text.contains("\n")) {
+            return "\"" + text.replace("\"", "\"\"").replaceAll("(?<!\\r)\\n", "\r\n") + "\"";
         } else {
             return text;
         }
@@ -47,7 +47,7 @@ public abstract class Csv {
                 bFirst = false;
                 writer.write(fieldFromString(col.getText()));
             }
-            writer.newLine();
+            writer.write("\r\n");
 
             for (TRow row : table.getItems()) {
                 bFirst = true;
@@ -59,7 +59,7 @@ public abstract class Csv {
                     String fieldValue = col.getCellObservableValue(row).getValue() != null ? col.getCellObservableValue(row).getValue().toString() : "";
                     writer.write(fieldFromString(fieldValue));
                 }
-                writer.newLine();
+                writer.write("\r\n");
             }
             Logger.log(Csv.class, Severity.Success, "Export to '" + destination.getPath() + "' successful.");
         } catch(IOException ex) {

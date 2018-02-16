@@ -107,7 +107,7 @@ public class FingerPrintGui extends Application {
                 FPItem item = createTree(fp);
                 return item;
             })
-            .filter(item -> item != null)
+                    .filter(item -> item != null)
             .collect(Collectors.toList());
 
             this.rootItem.getChildren().addAll(items);

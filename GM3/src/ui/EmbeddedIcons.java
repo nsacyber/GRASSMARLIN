@@ -73,7 +73,11 @@ public enum EmbeddedIcons {
     Vista_Information("/images/microsoft/Information.png", new Rectangle2D(1, 12, 32, 32)),
     Vista_CriticalError("/images/microsoft/CriticalError.png", new Rectangle2D(17, 26, 29, 29)),
     Vista_SeriousWarning("/images/microsoft/SeriousWarning.png", new Rectangle2D(17, 26, 16, 16)),
-    Common_Cancel("/images/microsoft/Cancel.png", new Rectangle2D(38, 10, 19, 19))
+    Common_Cancel("/images/microsoft/Cancel.png", new Rectangle2D(38, 10, 19, 19)),
+
+    //Operating systems
+    Windows("/images/Windows.png"),
+    Penguin("/images/Penguin.png")
     ;
 
     private final String path;
