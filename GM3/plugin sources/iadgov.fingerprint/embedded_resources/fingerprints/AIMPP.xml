@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>AIMPP</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of AIMPP Hello traffic.This fingerprint looks for the evidence of AIMPP Port Req traffic.</Description>
+    </Header>
+    <Filter For=" Hello">
+        <DstPort>2846</DstPort>
+    </Filter>
+    <Filter For=" Port Req">
+        <DstPort>2847</DstPort>
+    </Filter>
+    <Payload For=" Hello">
+        <Always>
+            <Return Confidence="1"/>
+        </Always>
+    </Payload>
+    <Payload For=" Port Req">
+        <Always>
+            <Return Confidence="1"/>
+        </Always>
+    </Payload>
+</Fingerprint>

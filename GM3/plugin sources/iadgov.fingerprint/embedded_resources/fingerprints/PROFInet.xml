@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>PROFInet</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of PROFInet RT Multicast traffic.This fingerprint looks for the evidence of PROFInet RT Unicast traffic.This fingerprint looks for the evidence of PROFInet Context Manager traffic.</Description>
+    </Header>
+    <Filter For=" RT Multicast">
+        <SrcPort>34963</SrcPort>
+    </Filter>
+    <Filter For=" RT Unicast">
+        <DstPort>34962</DstPort>
+    </Filter>
+    <Filter For=" Context Manager">
+        <SrcPort>34964</SrcPort>
+    </Filter>
+    <Payload For=" RT Multicast">
+        <Always>
+            <Return Confidence="5">
+                <Extract Name="PROFINET-RTM" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+    <Payload For=" RT Unicast">
+        <Always>
+            <Return Confidence="5">
+                <Extract Name="PROFINET-RT" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+    <Payload For=" Context Manager">
+        <Always>
+            <Return Confidence="5">
+                <Extract Name="PROFINET-CM" From="CURSOR_START" To="CURSOR_END"/>
+            </Return>
+        </Always>
+    </Payload>
+</Fingerprint>

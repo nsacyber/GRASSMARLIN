@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>CNRP</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of CNRP traffic</Description>
+        <Tag>Original</Tag>
+    </Header>
+    <Filter For="default">
+        <DstPort>2757</DstPort>
+    </Filter>
+    <Payload For="default">
+        <Always>
+            <Return Confidence="2"/>
+        </Always>
+    </Payload>
+</Fingerprint>

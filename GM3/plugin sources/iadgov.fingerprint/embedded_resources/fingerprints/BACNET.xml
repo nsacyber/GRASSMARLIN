@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (C) 2011, 2012
+ This file is part of GRASSMARLIN.
+-->
+<Fingerprint
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:noNamespaceSchemaLocation='../../../src/core/fingerprint/fingerprint3.xsd'>
+    <Header>
+        <Name>BACNET</Name>
+        <Author>Default</Author>
+        <Description>
+            Finds BACNET traffic and attemps to extract the Device Name and Number.
+        </Description>
+    </Header>
+    
+    <Filter For="BACNET">
+        <DstPort>47808</DstPort>
+        <SrcPort>47808</SrcPort>
+    </Filter>
+    
+    <Payload For="BACNET">
+        <Always>
+            <Return Confidence="1">
+                <Details>
+                    <Category>ICS_HOST</Category>
+                    <Detail Name="Detail">BACNET</Detail>
+                </Details>
+            </Return>
+        </Always>
+        <Match Offset="0" Within="65535" MoveCursors="true">
+            <Content Type="HEX">1007</Content>
+            <!-- if this hex is found anywhere in a packet it is a BACNET packet -->
+            <AndThen>
+                <ByteJump Bytes="1" Offset="9" Relative="false">
+                    <AndThen>
+                        <Return Confidence="1">
+                            <Details>
+                                <Role>SERVER</Role>
+                            </Details>
+                            <!-- one byte limits us to 256 characters -->
+                            <Extract Name="Device Name" From="10" To="CURSOR_MAIN" MaxLength="256"/>
+                        </Return>
+                    </AndThen>
+                </ByteJump>
+            </AndThen>
+        </Match>
+        <Match Offset="0" Within="65535">
+            <Content Type="HEX">1000C40200</Content>
+            <!-- if this hex is found anywhere in a packet it extracts two bytes after its occurance-->
+            <AndThen>
+                <Anchor Cursor="END" Offset="2" Relative="true"/>
+                <Return Confidence="1">
+                    <Details>
+                        <Role>CLIENT</Role>
+                    </Details>
+                    <Extract Name="Device ID" From="CURSOR_MAIN" To="CURSOR_END" MaxLength="2">
+                        <Post Convert="INTEGER"/>
+                    </Extract>
+                </Return>
+            </AndThen>
+        </Match>
+    </Payload>
+    
+</Fingerprint>

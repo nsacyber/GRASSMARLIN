@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>Network Time Protocol</Name>
+        <Author>Default</Author>
+        <Description>This fingerprint looks for the evidence of Network Time Protocol traffic.</Description>
+        <Tag>Original</Tag>
+    </Header>
+    <Filter For="default">
+        <SrcPort>0</SrcPort>
+        <DstPort>123</DstPort>
+    </Filter>
+    <Payload For="default">
+        <Always>
+            <Return Confidence="2"/>
+        </Always>
+    </Payload>
+</Fingerprint>

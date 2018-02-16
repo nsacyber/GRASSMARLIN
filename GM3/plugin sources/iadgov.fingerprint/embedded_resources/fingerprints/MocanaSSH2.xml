@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fingerprint>
+    <Header>
+        <Name>MocanaSSH2</Name>
+        <Author>Default</Author>
+        <Description>This device is running Mocana SSH 2, it is commonly used on industrial  systems and is at least seen in ruggedcom routers.</Description>
+        <Tag>Original</Tag>
+    </Header>
+    <Filter For="default">
+        <TransportProtocol>6</TransportProtocol>
+        <SrcPort>22</SrcPort>
+    </Filter>
+    <Payload For="default">
+        <Match Offset="0" MoveCursors="true">
+            <Content Type="HEX">5353482D322E302D4D6F63616E612053534820</Content>
+            <AndThen>
+                <Return Confidence="2">
+                    <Extract Name="This device is running Mocana SSH 2, it is commonly used on industrial  systems and is at least seen in ruggedcom routers." From="CURSOR_START" To="CURSOR_END"/>
+                </Return>
+            </AndThen>
+        </Match>
+    </Payload>
+</Fingerprint>

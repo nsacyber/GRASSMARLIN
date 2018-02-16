@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<template name="default">
+  <stages>
+    <stage index="0" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph" configurable="false">
+      <outputs>
+        <output>Default</output>
+        <output>Hardware Addresses</output>
+        <output>Address Mappings</output>
+        <output>Recordable Packets</output>
+        <output>Questionable Packets</output>
+      </outputs>
+    </stage>
+    <stage index="1" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph" configurable="false">
+      <outputs>
+        <output>Default</output>
+        <output>Hardware Addresses</output>
+        <output>Address Mappings</output>
+        <output>Recordable Packets</output>
+        <output>Questionable Packets</output>
+      </outputs>
+    </stage>
+    <stage index="2" name="Record Logical Packet Data" plugin="Grassmarlin" class="grassmarlin.plugins.internal.logicalview.StageRecordLogicalPacketData" configurable="false">
+      <outputs>
+        <output>Default</output>
+        <output>Pcap</output>
+        <output>Tcp</output>
+        <output>Udp</output>
+      </outputs>
+    </stage>
+    <stage index="3" name="Create Networks From Logical Addresses" plugin="Grassmarlin" class="grassmarlin.plugins.internal.logicalview.StageNetworkCreationFromLogicalAddresses" configurable="false">
+      <outputs>
+        <output>Default</output>
+      </outputs>
+    </stage>
+    <stage index="4" name="Metadata Lookup" plugin="Grassmarlin" class="grassmarlin.plugins.internal.metadata.StageApplyMetadata" configurable="true">
+      <outputs>
+        <output>Default</output>
+        <output>Manufacturer</output>
+        <output>Geolocation</output>
+      </outputs>
+    </stage>
+    <stage index="5" name="Add Properties" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageAddProperties" configurable="false">
+      <outputs>
+        <output>Default</output>
+      </outputs>
+    </stage>
+    <stage index="6" name="Record Deferred Progress" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageRecordCompletion" configurable="false">
+      <outputs>
+        <output>Default</output>
+      </outputs>
+    </stage>
+  </stages>
+  <entrypoints>
+    <entrypoint name="Discard Pcap">
+      <stages>
+        <stage index="1" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></stage>
+      </stages>
+    </entrypoint>
+    <entrypoint name="Retain Pcap">
+      <stages>
+        <stage index="0" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></stage>
+      </stages>
+    </entrypoint>
+    <entrypoint name="Default">
+      <stages>
+        <stage index="0" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></stage>
+      </stages>
+    </entrypoint>
+  </entrypoints>
+  <connections>
+    <connection>
+      <source index="0" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="2" name="Record Logical Packet Data" plugin="Grassmarlin" class="grassmarlin.plugins.internal.logicalview.StageRecordLogicalPacketData"></destination>
+      <output>Recordable Packets</output>
+    </connection>
+    <connection>
+      <source index="0" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="3" name="Create Networks From Logical Addresses" plugin="Grassmarlin" class="grassmarlin.plugins.internal.logicalview.StageNetworkCreationFromLogicalAddresses"></destination>
+      <output>Address Mappings</output>
+    </connection>
+    <connection>
+      <source index="1" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="3" name="Create Networks From Logical Addresses" plugin="Grassmarlin" class="grassmarlin.plugins.internal.logicalview.StageNetworkCreationFromLogicalAddresses"></destination>
+      <output>Address Mappings</output>
+    </connection>
+    <connection>
+      <source index="3" name="Create Networks From Logical Addresses" plugin="Grassmarlin" class="grassmarlin.plugins.internal.logicalview.StageNetworkCreationFromLogicalAddresses"></source>
+      <destination index="4" name="Metadata Lookup" plugin="Grassmarlin" class="grassmarlin.plugins.internal.metadata.StageApplyMetadata"></destination>
+      <output>Default</output>
+    </connection>
+    <connection>
+      <source index="1" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="4" name="Metadata Lookup" plugin="Grassmarlin" class="grassmarlin.plugins.internal.metadata.StageApplyMetadata"></destination>
+      <output>Hardware Addresses</output>
+    </connection>
+    <connection>
+      <source index="0" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="4" name="Metadata Lookup" plugin="Grassmarlin" class="grassmarlin.plugins.internal.metadata.StageApplyMetadata"></destination>
+      <output>Hardware Addresses</output>
+    </connection>
+    <connection>
+      <source index="4" name="Metadata Lookup" plugin="Grassmarlin" class="grassmarlin.plugins.internal.metadata.StageApplyMetadata"></source>
+      <destination index="5" name="Add Properties" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageAddProperties"></destination>
+      <output>Default</output>
+    </connection>
+    <connection>
+      <source index="0" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="5" name="Add Properties" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageAddProperties"></destination>
+      <output>Default</output>
+    </connection>
+    <connection>
+      <source index="1" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="5" name="Add Properties" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageAddProperties"></destination>
+      <output>Default</output>
+    </connection>
+    <connection>
+      <source index="2" name="Record Logical Packet Data" plugin="Grassmarlin" class="grassmarlin.plugins.internal.logicalview.StageRecordLogicalPacketData"></source>
+      <destination index="6" name="Record Deferred Progress" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageRecordCompletion"></destination>
+      <output>Default</output>
+    </connection>
+    <connection>
+      <source index="0" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="6" name="Record Deferred Progress" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageRecordCompletion"></destination>
+      <output>Questionable Packets</output>
+    </connection>
+    <connection>
+      <source index="1" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="6" name="Record Deferred Progress" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageRecordCompletion"></destination>
+      <output>Questionable Packets</output>
+    </connection>
+    <connection>
+      <source index="1" name="Create Basic Graph Elements" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageBuildGraph"></source>
+      <destination index="6" name="Record Deferred Progress" plugin="Grassmarlin" class="grassmarlin.plugins.internal.graph.StageRecordCompletion"></destination>
+      <output>Recordable Packets</output>
+    </connection>
+  </connections>
+</template>

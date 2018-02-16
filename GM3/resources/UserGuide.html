@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">/*<!--*/
+@media print {
+    h1 {page-break-before:always}
+    aside {page-break-before:avoid; page-break-inside:avoid}
+    p, ul {page-break-inside:avoid}
+
+    .collapsible.collapsed > * {display:block}
+    .control {display:none}
+}
+    /* Hopefully I'll remember to remove comic sans when moving from a beta to final release. */
+    .MainTitle {text-align:center; font-family:Comic Sans MS,Serif; font-size:72px; text-decoration:underline}
+    .Term {font-weight:bold; font-style:italics}
+    .Command {font-weight:bold; text-decoration:underline}
+    aside {border: solid 1px black; background-color:lightblue; margin:0.5em 4em}
+    code {border: solid 1px black; background-color:beige; margin-left:1px; padding-left:1px; margin-right:1px; padding-right:1px}
+    code.block {margin:0.5em 4em; display:block; white-space:pre}
+    .ImageBlock {margin:0.5em 8em}
+    .ImageBlock img {width:100%}
+    .ImageBlock p {font-weight:bold; text-align:center}
+
+    .collapsible {position:relative; margin-left:16px; min-height:20px}
+    .collapsible.collapsed > * {display:none}
+    .collapsible.collapsed > .control {display:block}
+    .collapsible.collapsed > * .control {display:none}
+
+    .collapsible > .control {position:absolute; top:0px; left:-16px}
+    .collapsible > .control > div {height:16px; width:16px}
+
+    .collapsible.collapsed > .control > div {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAASElEQVQ4y2NgoBAwQun/5OplgfH+/yfeDEZGRjibiViFuAATpWEw8AawEPIzuhh6YLPgk2RkZCQYO8MgEPEaQEzqpDgvDDwAAPihER8nMdg9AAAAAElFTkSuQmCC")}
+    .collapsible > .control > div {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAOUlEQVQ4y2NgoBAwQun/5OplgfH+/yfeDEZGRjibiVIvDAMDWHAFDi6AHtgs+CRHSCAyDXheGHgAAIbNCxwqsRtdAAAAAElFTkSuQmCC")}
+
+    .StageDescription { display:block; border:solid 1px black; background-color:#888}
+    .StageDescription > * {background-color:#EEE}
+    .StageDescription thead > tr > * {background-color:#BBB}
+    .StageDescription tbody > tr:nth-child(odd) > * {background-color:#DDDDDD}
+    .StageDescription tbody > tr:nth-child(even) > * {background-color:#D0D0D0}
+    .StageDescription tbody > tr:hover > * {background-color:#88F}
+    .StageDescription .InputBlock {float:left; width:50%; border:solid 1px black}
+    .StageDescription .OutputBlock {float:right; width:50%; border:solid 1px black}
+    .StageDescription .Configuration {clear:both; width:100%; border-top:solid 1px black; border-bottom:solid 1px black}
+    .StageDescription .Configuration tbody > tr.inapplicable > td {background-color:yellow}
+    .StageDescription .Configuration tbody > tr.inapplicable > td:before {content:"This Pipeline Stage is not Configurable."}
+    .StageDescription .UsageNotes {}
+    .StageDescription .TextDescription {}
+
+    p {text-indent:1em; text-align:justify}
+/*-->*/
+</style>
+</head>
+<body>
+<div class="MainTitle">GrassMarlin 3.3 Beta 3 User Guide</div>
+<nav>
+    <ul id="MainMenu"/>
+</nav>
+
+<h1 id="1">1 GrassMarlin Overview</h1>
+<div class="collapsible">
+    <p>GrassMarlin is an open-source software tool that generates a visualization of a network to facilitate further analysis.  There are many tools that fill this role in different ways, each with their own restrictions and advantages.  GrassMarlin aggregates data from multiple sources and presents it, partitioned both vertically and horizontally, to the user for further analysis.  The result of this process is to take an overwhelming amount of information and extract from it items of interest.</p>
+    <p>Originally, GrassMarlin was developed with a focus on Supervisory Control and Data Acquisition (<span class="Term">SCADA</span>) and Industrial Control System (<span class="Term">ICS</span>) hosts.  It has, however, expanded from these origins to operate in a broader set of environments, both in OT and IT (Operational and Informational Technology) realms.  With the plugin support added in version 3.3.0, GrassMarlin is adaptable to nearly any network environment, to include wireless and serial.  With the right set of plugins, it could probably support analysis of social networks as well.</p>
+    <aside>
+        <p>GrassMarlin 3.2 was the first version to have any Plugin support.  It was crude and it was minimally functional, but it was a step in the right direction.  Very often we have been asked if GrassMarlin can do X, where X is closely related to but outside the scope of what it does.  OT networks tend to be complicated beasts and sorting through the data is difficult, and many tools are deficient when used in such a setting.  GrassMarlin was designed to function in an OT environment and to facilitate the data partitioning that drives analysis, but this is where earlier versions stopped--it was up to the user to analyze, draw conclusions, and act.  Plugins change that--they can react to live data streams or to user interaction.  They take a single-purpose tool and open it up to a lot of similar tasks.</p>
+        <p>You'll find notes like this one throughout this document; these are asides from the developers intended to add context and/or entertainment to what is otherwise a very dry document (if you think reading this is bad, you should try <!-- reading it in Nathan Fillion's Captain Mal voice.  This is the best way to experience this guide and is far less arduous than -->writing it).<!-- Welcome to the comments, because the PM won't notice these. -->  Additionally, these notes highlight changes from previous versions, allowing anyone familiar with GrassMarlin 3.2 to quickly skim for relevant changes.</p>
+    </aside>
+    <p>There are several common misconceptions about GrassMarlin that continue to persist despite our best effort to inform users to the contrary.  The following is a short list that aims to clarify some of the most common misconceptions regarding GrassMarlin's capabilities.</p>
+    <ul>
+        <li>GrassMarlin is NOT a capture tool.  The ability to capture live Pcap is present as a convenience, not as a replacement to a more robust capture engine.  Aside from this one feature which simply listens to a NIC in Promiscuous Mode, GrassMarlin has no capture capabilities.</li>
+        <li>GrassMarlin is NOT a capture tool.  GrassMarlin does not have any special capability to find information on your network.  It will not decrypt VPN tunnels, it will not demultiplex serial-over-ip connections, it will not <i>do</i> anything on its own.  You, the user, are responsible for telling GrassMarlin precisely what data files to import and ensuring that those files are in a format it can understand.  In turn, it presents to you the information in those files in a manner that, hopefully, facilitates analysis of that data.</li>
+        <li>GrassMarlin is NOT an analysis engine.  While many analytic tasks <i>can</i> be automated, GrassMarlin does not automate them out of the box--every situation is sufficiently unique that this cannot be done.  GrassMarlin does not replace analysts, it helps them.</li>
+        <li>GrassMarlin is NOT a replacement for Wireshark.  GrassMarlin and Wireshark operate on the same data, but provide the user with different information.  GrassMarlin is meant to complement Wireshark--it is meant to help sift through a haystack of Pcap data to isolate the potential needles, which should in turn be inspected in Wireshark.</li>
+        <li>GrassMarlin is NOT a data repository.  A Session is intended to be a short-lived entity, not a persistent, accessible data store.  Effort has been made to facilitate developing systems that move data from GrassMarlin into appropriate data repositories (such as databases).</li>
+        <li>GrassMarlin is NOT a capture tool.  You give it data and it organizes that data.</li>
+    </ul>
+    <aside>
+        <p>GrassMarlin is NOT a capture tool.  Honestly, if you are reading this, you are probably not the intended audience for that message--thank you for that--but this misconception has persisted for years now, despite frequently and explicitly stating otherwise.  I can only surmise that most people discover GrassMarlin by word-of-mouth and inevitably it is misconstrued as a capture tool when making the transition between technical and non-technical roles.  It is understandable how this mistake happens, which is why we go out of our way to be extra clear on this point.<!-- As of this writing, "Is GrassMarlin a capture tool?" has not appeared on GitHub.  It has, however, come up countless times in meetings and email. --></p>
+    </aside>
+    <p>While sections 1 through 4 of this document contain information about the use of GrassMarlin, sections 5 through 7 contain technical detail that is directed not at users of GrassMarlin, but developers looking to expand on GrassMarlin's capabilities.</p>
+    <h3>A Message From Our Lawyers</h3>
+    <div class="collapsible">
+        <p>GrassMarlin is distributed to the public under the terms of the GNU Lesser General Public License, Version 3 (LGPL 3.0).</p>
+        <p>GrassMarlin and its accompanying files ("this Work") are provided "as is".  Any express or implied warranties, including but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed.  In no event shall the United States Government be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services, loss of use, data, or profits, or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this Work, even if advised of the possibility of such damage.</p>
+        <p>The User of this Work agrees to hold harmless and indemnify the United States Government, its agents and employees from every claim or liability (whether in tort or in contract), including attorneys' fees, court costs, and expenses, arising in direct consequence of Recipient's use of the item, including but not limited to, claims or liabilities made for injury to or death of personnel of User or third parties, damage to or destruction of property of User or third parties, infringement or violations of intellectual property or technical data rights.</p>
+        <p>Nothing in this Work is intended to constitute an endorsement, explicit or implied, by the United States Government of any particular manufacturer's product or service.</p>
+        <p>Reference herein to any specific commercial product, process, or service by trade name, trademark, manufacturer, or otherwise, in this Work does not constitute an endorsement, recommendation, or favoring by the United States Government and shall not be used for advertising or product endorsement purposes.</p>
+        <p>While using this product, the user may be exposed to chemicals and/or environmental conditions known to the State of California to cause cancer and birth defects or other reproductive harm.</p>
+    </div>
+    <h3>General Workflow</h3>
+    <div class="collapsible">
+        <p>GrassMarlin is a tool and, like any tool, can be used to solve a wide array of problems.  While creative use of available tools can lead to effective, if unconventional, solutions<!-- https://thedailywtf.com/articles/Caught -->, this guide assumes a particular workflow--creative adaptation is left as an exercise for the reader.</p>
+        <p><span class="Term">Data Files</span> are <span class="Term">imported</span> into GrassMarlin and from those files information is collected, sorted, and stored.  Correlations with other data sets--fingerprinting, OUI lookups, and more--are integrated with the imported data and together produce a <span class="Term">Logical Graph</span> and a <span class="Term">Physical Graph</span>.  <span class="Term">Plugins</span> can be used to expand on this in terms of not only input formats, but also integrating new data sources, drawing conclusions, and conveying the resulting content to the user, but the Logical and Physical Graphs remain the basic output from GrassMarlin.</p>
+        <p>A <span class="Term">Graph</span> is a collection of <span class="Term">Nodes</span> and <span class="Term">Edges</span>, where the edges define connections between nodes.</p>
+        <aside>
+            <p>In code we use "Vertex" instead of "Node".  This is partially because vertex is the more formal term, but also to resolve the ambiguity when working with the JavaFX Node class.  These two terms are interchangable, but technical documentation uses "vertex" while user documentation uses "node".</p>
+        </aside>
+        <p>The <span class="Term">Physical Graph</span> is built by identifying physical endpoints (generally MAC addresses) with the goal of diagramming the physical connections between devices.  The edges of this graph are wires and the nodes are the physical interfaces to which the wires connect (there may also be nodes to indicate an unmapped network segment).  On a switched network, it is generally impossible to passively determine how devices within a switched segment connect to each other--this is where switch configuration files come into play.  These configuration files allow the otherwise ambiguous regions of network topology to be mapped.  New to GrassMarlin 3.3.0, the contents of the Physical Graph can be inferred from PCAP metadata.  Switching architecture remains an unknown, but network segments can be identified even in the absence of switch configuration files.</p>
+        <p>The <span class="Term">Logical Graph</span> is built by identifying logical endpoints (generally IP + MAC pairs) to produce a diagram of logical communication channels.  The nodes of this graph are all the endpoints and the edges are communications channels where packets have been observed.  These endpoints can then be grouped according to identified properties--networks, manufacturers, and so on.  From the Logical Graph it is possible to visualize the flow of data between different endpoints, assess whether network boundaries are being respected, and identify rogue devices<!--, assuming one has access to a Scroll of Identify or a Wand of Identify with sufficient charges remaining-->.</p>
+        <p>When a data file is imported, the <span class="Term">Importer</span> reads the file and generates a series of <span class="Term">Objects</span> which are added to the current <span class="Term">Session</span>'s <span class="Term">Pipeline</span>.  A Session is the data that has been accumulated as a result of importing files through a particular Pipeline.  The Pipeline is a set of discrete <span class="Term">Pipeline Stages</span> that accept input Objects, modify the Session, and produce output Objects.  Some stages output every object they receive, some change the order of objects, some filter the Objects to different paths through the Pipeline, some modify the Session, and others leave the Session untouched.  There are many different Pipeline Stages defined in the GrassMarlin core, and they are described <a href="#Stages">elsewhere</a> in this guide.  Plugins are free to define new Stages as well.</p>
+        <p>The data files that are imported into a Session are typically PCAP files.  Most often, the PCAP files to be imported are collected from a sensor platform designed for the task.  While that sounds like a sophisticated, well-defined procedure, in practice it ranges from connecting a laptop to the spam port of a switch and capturing everything to leveraging existing network monitoring tools.  Other data formats can be supported with the addition of Plugins designed for the specific formats to be imported.</p>
+        <p>Once all the relevant imports are complete, the resulting Logical Graph and Physical Graph are analyzed by users to identify artifacts that warrant further investigation.  This may take the form of identifying an unknown device, unusual traffic patterns, or other anomalous behavior.  The expectation is that the user will be responsible for analyzing the resulting data and identifying these artifacts; GrassMarlin is not an analysis engine to be programmed to perform this analysis, it is a tool designed to help focus a human analyst's attention.</p>
+        <aside>
+            <p>The ability to build the Physical Graph from PCAP data was actually the primary reason why 3.3 departs so significantly from 3.2.  The initial plan for 3.3 had been to gradually build on the Plugin model that was started in 3.2 (The 3.2 User Guide alludes to this), but the decision to integrate data on the Logical and Physical Graphs required a much more invasive design change than had been initially believed.  This quickly snowballed to incorporate the Pipeline.  The decision to build core functionality as a Plugin also forced the Plugin interfaces to be integrated from the start (technically not the start, but the change was made before the first alpha build).  The Software Engineer in us is apalled by the rewrite-from-scratch method used for the last 2 minor releases, but when comparing product functionality to developer-hours, it is hard to argue it was a bad choice.  As is often the case, technical debt accrued while domain knowledge was gathered and the rewrites were a way to pay it off before interest came due.  We would like to thank the leadership that allowed us to proactively tackle the technical debt; it has resulted in a much better product than would have otherwise come about.</p>
+            <p>This is the last planned release of GrassMarlin.  The greatly expanded plugin model, coupled with the abstractions in the core data model, allow us to shift focus from writing the core application framework to developing solutions for specific problems.  These solutions are expected to take the form of plugins.  Every once in a while a plugin requires a change to the core behaviors, but as time goes on that happens less and less.  While the GrassMarlin platform may be at the end of its development path, Plugins to meet specific needs are expected to take over the development schedule.  The project isn't dead, just entering a new phase; when that happens, pop a fear break and keep an eye to the Message Log for a notice that "GrassMarlin takes a deep breath." and run for cover when it does.  If that last sentence makes no sense to you, then you have spent your life more wisely than I and should ignore it.</p>
+        </aside>
+    </div>
+    <h2 id="Versioning">1.1 Versioning</h2>
+    <div class="collapsible">
+        <p>Releases of GrassMarlin are labeled with a 3-part version number and a revision.  This is formally written as <span class="Term">Major</span>.<span class="Term">Minor</span>.<span class="Term">Patch</span>r<span class="Term">Revision</span>.  Most often, the shortened form of <span class="Term">Major.Minor</span> is used.</p>
+        <p>Development starts with identifying a shortcoming in existing tools.  This shortcoming is to be addressed by a Major version.  All versions of GrassMarlin are aimed at facilitating analysis of network traffic, but version 3 is focused on adding flexibility to the analysis, to permit analysis of different data formats, and to permit integration with myriad systems.</p>
+        <p>Once an overall goal is established, the next step is to take a measurable step towards reaching that goal.  Each step is a Minor version.  In order to be a measurable step, specific features are identified that would progress the software towards the goal, and they are then implemented.  So while Version 3 is focused on providing a flexible platform for GrassMarlin, 3.3 focuses on a Plugin model, a configurable Pipeline, and a Session that does not differentiate between the Logical and Physical networks.</p>
+        <aside>
+            <p>The full feature set of a Major.Minor version isn't actually known when we start work on that version.  We have a vision, but as that vision is realized we often start down previously unseen directions.</p>
+        </aside>
+        <p>If there is a bug in a particular Minor version, then a Patch is issued to address the shortcomings.</p>
+        <p>The Revision number corresponds to the exact set of files in the master source repository that was used to build the released version.</p>
+        <aside>
+            <p>As part of the many process improvements that have happened recently, GrassMarlin 3.3 was built in a different development environment than its predecessors.  As a result, it is decoupled from the source control previously used and the revision number was reset.  Github is not the master source repository--builds from the master repository are copied to Github as releases, but actual version control and configuration management is handled elsewhere.  This change also impacted the 3.2.1 release (we botched it--we pulled the wrong set of files and the synchronization between development environments was never fully completed) and the fix for that (3.2.2) was released from the network where 3.3 was developed.</p>
+        </aside>
+    </div>
+    <h2 id="SupportedPlatforms">1.2 Supported Platforms</h2>
+    <div class="collapsible">
+        <p>Supported platforms are those on which every effort has been made to ensure the GrassMarlin application installs and executes as intended.  Installation packages are provided and failure for GrassMarlin to start on these platforms when using such a package is regarded as a bug that should be reported.</p>
+        <ul>
+            <li>Microsoft Windows (64-bit 7, 8, and 10)</li>
+            <li>Fedora (23)</li>
+            <li>Ubuntu (14.04, 15.10, and Security Onion)</li>
+            <li>Kali 2.0</li>
+            <li>CentOS (6, 7)</li>
+            <li>Debian (8)</li>
+        </ul>
+        <p>Additionally, installers are provided for some unsupported platforms (32-bit Windows, for example).  In these cases we have tested the application in these environments, however there are no assurances it will work without additional configuration.  We do not formally provide support for these platforms, but we have observed working installations.  Running GrassMarlin on these platforms may result in degraded performance and/or depend on post-install reconfiguration, but is possible.</p>
+        <aside>
+            <p>The GrassMarlin code does work on Windows XP, and the Windows installers should also run on Windows XP, however the typical Windows XP Java installation is not fully compatible with GrassMarlin, requiring some minor changes to the GrassMarlin batch file to compensate.  The necessary changes vary by specific circumstances, but can generally be inferred from the error messages and an Internet search of Java errors.  There is no support for this, but it has been made to work in specific environments.  If this is your only option, then you have my sympathies.</p>
+        </aside>
+    </div>
+    <h2 id="Support">1.3 User Support</h2>
+    <div class="collapsible">
+        <p>There are three distinct tiers of user support that are available.  While this application is distributed to the global public on GitHub, it is a product of the United States Department of Defense and is available to U.S. Government agencies through other channels.</p>
+        <p>General Q&amp;A and support regarding execution on a supported platform is available through GitHub for the general public.  We can only support English-language queries.</p>
+        <aside>
+            <p>Thank you, corbers, for the detailed bug reports on GitHub.  The diagnosis and level of detail in your reports is very welcome and is regarded as an example of the gold standard of bug reporting.</p>
+        </aside>
+        <p>Government partners may have access to additional channels for support, depending on what authorities and agreements apply.</p>
+        <p>Agency partners should contact the GrassMarlin team lead directly.</p>
+        <aside>
+            <p>The GrassMarlin team is small.  Very small.  We have nowhere near the resources we would like to have to support GrassMarlin, to say nothing of the resources users would like us to have.  We do our best to ensure a quality release and provide support, but the simple reality is that we don't have the manpower for a well-polished product or responsive support.  We're a tiny prototype team and we aim for a 90% solution that gets the job done well enough.  We try to provide support, but it is low on our priority list.  We wish this wasn't the case, but considering our origin story of "anything would be better than the nothing we have now." it isn't the worst situation.</p>
+        </aside>
+    </div>
+    <h2 id="1.4">1.4 Quick Start Guide</h2>
+    <div class="collapsible">
+        <p>For users aready familiar with the operation of GrassMarlin 3.2, this section will highlight the major changes present in GrassMarlin 3.3.  This is intended only as a quick overview of the significant changes and does not cover every (or, indeed, any) change in detail.  It is still recommended that all users read the complete User Guide.</p>
+        <aside>
+            <p>We're required to say that.  A quick glance over this section and fifteen minutes of playing with 3.3 in a safe environment (for the love of Celestia do <em>not</em> do this in a production setting) will probably teach you everything you need to know.  Once you've done that, consider looking at the more detailed section on specific Pipeline Stages to get a feel for how the data flow can be manipulated.</p>
+        </aside>
+        <p>The biggest change to the general use of 3.3 is the introduction of the Pipeline.  Every Session has one.  The Pipeline is built from a Pipeline Template, which describes entry points, stages, and the links between them.  A session's pipeline is constructed from the currently selected pipeline template when the first Import for that Session starts, and <em>can not be changed once created</em>.  The default pipeline functions similarly to 3.2, applying fingerprinting, OUI and GeoIp lookups, etc.  There is also an alternate entry point into the default pipeline that does not retain Pcap metadata.  This is intended for large scale uses where the retention of data interferes with the ability of the application to function (1TB+ Imports, 24/7 watch floor operations, etc.).  The Pipeline Editor can be found in the Tools menu.  By default, it edits the current session's default Pipeline Template--once the Pipeline has been created, it becomes a read-only view.  Ctrl+Click on a linking triangle will remove all connections to/from that triangle, clicking a linking triangle will select it, and shift+clicking a triangle will link it to the currently selected triangle.  The context menu can be used to create and remove Stages.</p>
+        <aside>
+            <p>If you really need to change the pipeline for a Session that has already imported a file, save the Session and then edit the save file manually (it is a ZIP of XML files).  This is not supported and is a great way to accidentally break everything else, but you can do it.</p>
+        </aside>
+        <p>The next most significant change is the addition of Plugins.  Plugins are Java Archive (JAR) files that are placed in the application's "plugins" subdirectory.  These files must conform to a specification described in detail <a href="#PluginDevelopment">later</a> in this document.  Plugins may define new Pipeline Stages, add context menu items to the Logical Graph, generate new data visualizations, and define new import file parsers, to name a few possibilities.  A list of currently-loaded plugins can be found in the Plugins menu.</p>
+        <aside>
+            <p>As of this writing, the Plugin interface hasn't been fully locked down and the Physical Graph is still missing a few key features, to say nothing of the API to manipulate it via plugins, so the wording here is a little vague on the possibilities because the bounds haven't been set yet.</p>
+        </aside>
+        <p>In 3.2 a lot of the options for a Visualization were accessed through a Context Menu.  While this is still generally true, the View menu contains additional items that depend on the currently selected tab.  This is where options like turning on Curved lines exists.  There is also a menu item which allows the user to turn on and off additional tabs.  Note that turning tabs off has minimal performance impact; as long as a tab exists in the View menu, it will be processed.</p>
+    </div>
+</div>
+
+<h1 id="Gui">2 GrassMarlin Graphical Interface</h1>
+<div class="collapsible">
+    <p>When executed in SDI mode, GrassMarlin will run with a graphical interface.  The main window of this interface has two major areas:  the <span class="Term">Visualization</span> and <span class="Term">Navigation</span> areas.  These are supplemented with the available <span class="Term">Views</span>, the <span class="Term">Toolbar</span>, the <span class="Term">Menu</span> above it, and the <span class="Term">Message Log</span>.  These are shown in the image below (The Menu is shown, but not labeled<!-- because I was too lazy to go back and add it after I realized it should be labeled.   -->).</p>
+    <aside>
+        <p>SDI stands for Single Document Interface.  This is not the only mode that is supported, but it is the most well-known mode, and is what is generally associated with GrassMarlin.  New to 3.3 are Console and Diagnostic modes.  Diagnostic mode reports configuration information that can be useful in debugging certain issues but is not interactive in any way, while Console mode is a text-only interactive console interface that provides access to a subset of GrassMarlin's capabilities which is intended to be integrated into existing non-interactive workflows.</p>
+    </aside>
+    <div class="ImageBlock">
+        <img src="images\screenshots\AnnotatedApplicationWindow.png" />
+        <p>Figure 1: New GrassMarlin Session, Annotated with major components.</p>
+    </div>
+    <p>The border between the Navigation, Message Log, and Visualization areas can be dragged to resize the different components, but the Message Log will always be below the Navigation area, and the Visualization will always be to the right of the Message Log and Navigation areas.</p>
+    <p>The different Views, in the Graphical Interface, are depicted as Tabs along the top of the Visualization area.</p>
+    <p>When the currently selected View changes, the Visualization and Navigation update to reflect the new View's content.  The Edit Menu and parts of the View Menu are also updated.  Each View is free to designate how each of these components is modified.  Consult the sections on the individual Views for details.</p>
+    <p>In addition to the main window, the <span class="Term">Pipeline Editor</span> is available from the Tools menu.</p>
+    <p>Most work will be performed in the main window, but the <a href="#PipelineEditor">Pipeline Editor</a> is used to construct new Pipeline Templates to facilitate more advanced use cases.</p>
+    <h2 id="MessageLog">2.1 Message Log</h2>
+    <div class="collapsible">
+        <p>The message log displays a list of messages generated by the application describing the actions it has been instructed to perform, the outcome of those actions, errors encountered, and other potentially-useful bits of information.  All messages are also written to a log file, one file per launch of the GrassMarlin application.  Each Message is associated with a Severity.  Generally, Messages which are marked as Information, Completion, Warning, and Error are sent to the Message Log while others are suppressed.  All messages are sent to the log file.</p>
+        <p>The messages in the message log are timestamped and are also color-coded based on severity.  The message log may "forget" old messages if the list of messages grows very long.  If this happens, each new message will cause the oldest message to be removed.  All messages are always present in the log files.</p>
+        <aside>
+            <p>The only other Severity aside from those listed above that is presently defined is "Pedantic Developer Spam" which is so-named because it is generally used to provide excessively verbose details to assist in troubleshooting.  These messages are of minimal use to a user, but are useful when attempting to diagnose odd behaviors.  These messages will be displayed in the Message Log when the GrassMarlin application is running in Developer Mode.</p>
+        </aside>
+    </div>
+    <h2 id="Views">2.2 Views</h2>
+    <div class="collapsible">
+        <p>Along the top of the Visualization area are tabs for the currently-available Views.  Selecting a tab will update the Visualization and Navigation areas to display that View.  When the View changes, the View and Edit menus are also updated.</p>
+        <p>In addition to the Views that are already visible as Tabs, there may be additional hidden Views that are available.  These are listed under the <span class="Term">Tabs</span> item within the <span class="Term">View</span> menu.  By default, the Logical Graph and Physical Graph are visible, and the Logical Graph Reports can be displayed through the View menu.  It is also possible to create Watch and Filter Views of the Logical Graph, and this is done through the Logical Graph's interface.</p>
+        <p>Each View is responsible for its own Visualization and Navigation.  There is no standard that all Views must meet.  While the Logical Graph and Physical Graph are similar (an infinitely-scrollable field upon which nodes are automatically created and can be moved around), the Logical Graph Reports tab contains a series of tables of data.</p>
+        <aside>
+            <p>There used to be a "Sniffles" tab.  The content displayed there is now integrated into the Logical and Physical Views, and so it has been removed.  In theory.  In practice, we haven't written the Plugin that provides the necessary Import functionality to make this happen.</p>
+        </aside>
+    </div>
+    <h2 id="PipelineEditor">2.3 Pipeline Editor</h2>
+    <div class="collapsible">
+        <p>The Pipeline Editor (which can be accessed from the "Tools" menu) allows a user to create a new Pipeline, as well as view existing Pipelines.  The Pipeline Editor functions as a standalone window, in part because it modifies supplementary data files--it does not interact with the current Session directly (it can modify the Pipeline Template being used by the current Session, but these are distinct entities).</p>
+        <div class="ImageBlock">
+            <img src="images\screenshots\2.png" />
+            <p>Figure 2: Pipeline Editor depicting the Default Pipeline</p>
+        </div>
+        <aside>
+            <p>The Pipeline Editor, being a brand-new feature, has a few quirks that need to be hammered out yet.  We welcome constructive feedback.  The elevator pitch for the Pipeline Editor was "What if we could use the Unreal Engine's Blueprint Editor to modify the data flow?", which led to a lengthy discussion about building GrassMarlin 3.3 entirely within the Unreal Engine.</p>
+        </aside>
+        <h3 id="PipelineEditor.Controls">Controls</h3>
+        <div class="collapsible">
+            <p>TODO: Document Pipeline Editor controls in detail</p>
+            <ul>
+                <li>To create a new Pipeline, select the New menu item from the File menu and enter the name of the new Pipeline when prompted.  Alternatively, working on the default Pipeline is possible, but in this cases it must be Exported, rather than saved.</li>
+                <li>New entry Points and Stages can be added from a context (right-click) menu.</li>
+                <li>To remove existing links, hold Ctrl and click on the arrow at either end of the link.  This will remove all connections to/from that arrow.</li>
+                <li>To add a new link, click one endpoint so that it is highlighted, then hold Shift and click on the other endpoint of the link.</li>
+                <li>It is not possible to modify the Pipeline associated with the current Session.  Before content is Imported into a Session, the Pipeline can be selected.  Once an Import begins, the Pipeline for that Session becomes fixed and cannot change.  The Pipeline Editor does not modify the Session's Pipeline, it modifies the template that is used to construct that Pipeline when the first Import begins--once the Pipeline is created, changes to the Template have no effect.</li>
+            </ul>
+        </div>
+        <h3 id="PipelineEditor.Workflow">Workflow</h3>
+        <div class="collapsible">
+            <p>TODO: Document the PipelineEditor file management, interaction with the default template, etc.</p>
+        </div>
+    </div>
+    <h2 id="Property">2.4 Properties</h2>
+    <div class="collapsible">
+        <p>Throughout GrassMarlin, many entities are said to have Properties.  A Property is a named field that can have one or more values, each value being associated with a Confidence.  There is no fixed list of Properties that can or must be defined--the names of Properties are chosen when the values are assigned and the meaning or purpose of the values is similarly determined by the source of the property.  When the last value is removed from a property, the proeprty ceases to exist.</p>
+        <p>The Confidence is a measure of the reliability of the value.  Historically, the confidence has been a numeric value in the range of 1 to 5 (inclusive), where 1 represented the most confidence and 5 the least.  In GrassMarlin, the numeric scale still exists, but the values are named<!-- because the inverse relationship kept confusing everybody but we are committed to it now-->.  The scale also includes 0 for information that is to be treated as known fact--generally user-specified data but also possibly data observed directly and without ambiguity.</p>
+        <p>Properties are usually created by Pipeline Stages or Importers and are assigned to different entities as part of the Pipeline.  When a Property has multiple values, the entity with which those properties and values are associated must decide which values are important and which are not.  There are two models for handling this:  the Property Container and the Property Cloud.  In both cases the entities remember all Properties and Values they has been given, but which Properties and Values they report as being present change.  The reported properties are known as the <span class="Term">effective properties</span>.</p>
+        <p>Formally, the named field that can be assigned values is a Property, but often the term "Property" is used to refer to the values associated with a Property.  </p>
+        <h3 id="PropertyContainer">Property Container</h3>
+        <div class="collapsible">
+            <p>A Property Container reports every Property it has been assigned, but each Property only reports the Values with which it is most Confident.  A Property Container is used to describe a thing; something that has a specific set of properties and behaviors, and we are guessing what it is.  Because a thing is either one thing or another, not both, we only use the Values in which we are most confident.  <!-- There was a lot of debate about the data to be used in examples.  Screenshots was easy; we have some pcap data sets from conferences, but that data doesn't help when we need particularly contrived examples.  We could use the name of real companies, but that can have implications we don't want to make.  We could use obvious placeholder names, but "Example Company 1" feels sterile and is usually a clue to your brain that it should turn off.  So, with promises of cake, we opted for a middle ground. -->Suppose, for example, that there is a Node on the Logical Graph that has a Manufacturer Property with a Value of "Skynet Research" at a confidence of 4 (Medium Low) and a "Network" Property that has a value of "127.0.0.1/32", also with a Confidence of 4 (Medium Low).  Additional data is made available and a new Value is added to the Manufacturer Property indicating that the Manufacturer is "Aperture Science Laboratories" with a confidence of 3 (Medium).  When this Value is added, the previous Manufacturer Value is suppressed because we are more confident in the new Value, but the Network is unaffected--it is still the highest-confidence Network.  If more data is available that causes us to suspect that the Manufacturer is "Black Mesa", and we add this value with a Confidence of 3 (Medium), then both "Black Mesa" and "Aperture Science Laboratories" will be reported as they are both held at the same confidence level.  These changes to the "Manufacturers" Property will have no impact on the "Network" property, which has remained constant at "127.0.0.1/32".</p>
+            <p>A Property Container may inherit the Properties and Values of other Property Containers.  The nodes on the Logical Graph are examples of this.  Each Node represents one or more Logical Address Mappings, each of which share a common Hardware Address.  Any Property associated with any of the mappings or the Hardware Address is considered to be a Property of the Logical Node.</p>
+        </div>
+        <h3 id="PropertyCloud">Property Cloud</h3>
+        <div class="collapsible">
+            <p>A Property Cloud reports every Property is has been assigned, and every distinct Value is reported for each Property, but only at the highest Confidence for that individual Value.  The Property Cloud is used to describe conduits--entities that have no actual form, but must present information about how they are used.  A stronger belief that one use exists does nothing to call into question a different use--both are allowed to coexist.</p>
+            <p>The edges of the Logical Graph are Property Clouds--they report information about the data seen passing through them, and the presence of one type of data does not invalidate the perceived presence of a different type of data.  It is, however, unnecessary to report every confidence at which a particular behavior is observed--the confidence is needed to inform the user of the certainty of the detection, and a higher confidence encompasses a lesser confidence.</p>
+        </div>
+    </div>
+</div>
+
+<h1 id="LogicalGraph">3 Logical Graph</h1>
+<div class="collapsible">
+    <p>The Logical Graph is a visualization of the logical connections that exist within a network.  The nodes of this graph represent the logical endpoints of the network and the edges indicate communications channels.  Properties are assigned to the endpoints indicating known or suspected attributes of the devices at those endpoints.  Some common attributes include a manufacturer, location, or role.  The edges store information about the data flowing between the nodes, to include references to observed packets, protocols, and volume of traffic.</p>
+    <aside>
+        <p>This section is describing the Logical Graph Visualization--the visual depiction that is part of the core GrassMarlin.  To most people, this <i>is</i> the Logical Graph, but there are a couple layers of abstraction that are worth noting for the developers out there looking to integrate with GrassMarlin.  The Session contains a list of Logical and Physical Vertices and corresponding sets of Edges.  This results in two graphs.  The resulting graphs, however, contain information at a level of detail that is needlessly complicated to depict--the logical graph breaks down every ip/protocol/port as a distinct vertex while the physical graph has no notion of a switch.  There is a layer that aggregates the portions of the logical and physical graphs (in the session) into the higher-level logical graph that users are used to, and then another layer depicts that graph visually.</p>
+    </aside>
+    <div class="ImageBlock">
+        <img src="images\screenshots\LogicalGraphWithMediumTestDataGroupedByNetwork.png" />
+        <p>Figure 3: Logical Graph</p>
+    </div>
+    <p>Each node in the Logical Graph is identified by a Logical Address Mapping--a Logical Address paired with a Hardware Address.  Logical Addresses also have a property whereby one address may be contained within another address.  For example, the IP address 192.168.0.50 contains the address 192.168.0.50:50udp.  These contained, or child, addresses are also part of the Logical Graph, however they are hidden by default.  Different address types will be rendered in different colors.  Nodes in the Logical Graph are <a href="#PropertyContainer">Property Containers</a>, and they aggregate the <a href="#Property">Properties</a> of all the child nodes they contain.</p>
+    <aside>
+        <p>Earlier versions of GrassMarlin used only the Logical Address to identify a node on the Logical Graph.  The use of Logical-Hardware pairs allows for better visibility when multiple hosts have the same logical address (load balancing, different networks, misconfiguration, etc.).</p>
+    </aside>
+    <p>An edge in the Logical Graph is created whenever there is packet communication between two nodes.  ICMP Packets that are not ping replies are not treated as "packet communication" for the purposes of building the logical graph; as non-existent hosts are often the target of ping queries.</p>
+
+    <h2 id="LogicalGraph.Navigation">Navigation</h2>
+    <div class="collapsible">
+        <p>The Logical Graph can be navigated and manipulated using the mouse.  <span class="Term">Pan</span> by clicking the left mouse button and dragging.  <span class="Term">Zoom</span> using the scroll wheel; scroll up to zoom in, down to zoom out.  Zooming works anywhere as long as the mouse is over the Visualization area, but panning requires the click to be made on the background (or a non-interactive element)--clicking on an interactive element to start a pan will instead drag that element.</p>
+        <p>Clicking and dragging on a <a href="#LogicalGraph.Node">Node</a> in the Logical Graph will drag that Node rather than panning the entire visualization.  Similarly, clicking and dragging an <a href="#LogicalGraph.Aggregate">Aggregate</a> will drag all the members of that Aggregate.</p>
+        <p>There are several commands available in the context (right-click) menu to assist in navigation:</p>
+        <ul>
+            <li><span class="Command">Zoom to Fit</span> will zoom out so that the entire Logical Graph can be displayed in the current viewport and will pan so that it is centered.  If the graph is too large to fit in the viewport at the lowest zoom level, then it will zoom out as far as is permitted and center the graph.</li>
+            <li><span class="Command">Fit to Window</span> will reposition the Nodes of the Graph, maintaining the same relative position, to fit within the current viewport.</li>
+            <li><span class="Command">Reset Zoom</span> will reset the zoom to 0 (1x magnification) and place the origin in the center of the viewport.</li>
+        </ul>
+        <p>TODO: Describe the navigation tree interface</p>
+        <aside>
+            <p>In GrassMarlin 3.2 there was an ability to Ctrl+Scroll over an Aggregate to expand or contract the elements.  This feature has been removed in favor of the improved layout algorithm.</p>
+            <p>Zooming operates on an exponential scale, where the zoom level is an integer in the range [-48, 48] and the scale is 1.1 raised to Nth power, where N is the current zoom level.  This places the zoom range at approximately 100x to 0.01x.  This is a completely arbitrary choice and, should it prove to be inadequate, can be changed in grassmarlin.ui.common.ZoomableScrollPane by adjusting the <code>SCALE_MIN</code>, <code>SCALE_MAX</code>, and <code>SCALE_FACTOR</code> constants.</p>
+        </aside>
+    </div>
+
+    <h2 id="LogicalGraph.Node">Nodes</h2>
+    <div class="collapsible">
+        <p>The Nodes of the Logical Graph correspond to workstations, servers, router ports, PLCs, and other devices that send and receive information to generate an effect (as opposed to things like switches that send and receive data on behalf of others or for the purpose of determining how to send data on behalf of others).  A node is created for every distinct Hardware-Logical Address pair that is not contained by another address.  Logical Addresses include such entities as IP addresses, but also include IP addresses with port and protocol information.  The node has all the <a href="#Property">properties</a> of the hardware address and all the properties of all of the Logical Addresses that compose the Node.  These properties are combined as a <a href="#PropertyContainer">Property Container</a>.</p>
+        <div class="ImageBlock">
+            <img src="images\screenshots\LogicalGraph.ExampleNodeBase.png" />
+            <p>Figure 4: Logical Graph Node</p>
+        </div>
+
+        <h3 id="LogicalGraph.Node.Properties">Properties</h3>
+        <div class="collapsible">
+            <p>Some properties are associated with images.  Every image that corresponds to a property and value held by a node will be displayed to the left of that node's nameplate.  In Figure 4, above, the node has a Manufacturer of "RuggedCom Inc." and a Country of "United States".  Both of these property/value pairs are associated with images, and so the RuggedCom logo and the flag of the United States are displayed.</p>
+            <aside>
+                <p>Images come from two sources.  Plugins may define property name/value pairs to associate with images.  These images will be used when the corresponding name/value pair is encountered, unless there is also a corresponding image on disk.  The "images/logical" directory located in the application's install directory contains a series of subdirectories, each corresponding to a property name.  Within each of these directories are PNG image files that map to the values of the corresponding properties.  There are some adjustments made to the names to simplify the handling of non-ASCII characters in filenames.  If the details of this system are important, then you should look at the code, as the exact handling of files on disk is left as an implementation detail and is subect to change wihout notice--plugins should always use the <code>ILogicalGraphApi</code> interface.</p>
+            </aside>
+            <p>Not all properties are associated with images--most are not.  To view all the properties of a node, right-click on the Node to open the context menu and select the item labeled "Show Details for (Node)...".  This will open a dialog similar to the one depiced in Figure 5, below.  This dialog will show all the effective properties associated with the chosen node, their values, and the confidence of those values.</p>
+            <div class="ImageBlock">
+                <img src="images\screenshots\LogicalGraph.ExampleNodePropertiesDialog.png" />
+                <p>Figure 5: Logical Graph Node's Properties Dialog</p>
+            </div>
+        </div>
+
+        <h3 id="LogicalGraph.Node.Children">Child Nodes</h3>
+        <div class="collapsible">
+            <p>Each visual node on the logical graph represents one or more logical endpoints for communication.  The <span class="Command">Expand Child Elements</span> item on the Node's context menu can be used to toggle the display of these child addresses (it defaults to off).  When enabled, every child node will be listed.  Each address is rendered in a different color to indicate the type of endpoint.  The plugin that defines a new type is free to set the color for that endpoint.  In the GrassMarlin core, the following colors are defined:</p>
+            <ul>
+                <li><span class="Command">Black</span> is the default.</li>
+                <li><span class="Command" style="color:#FF0000">Red</span> indicates TCP Ports.</li>
+                <li><span class="Command" style="color:#00FF00">Green</span> indicates UDP Ports.</li>
+                <li><span class="Command" style="color:#00008B">Dark Blue</span> indicates Router Addresses.</li>
+            </ul>
+            <aside>
+                <p>The default colors can be changed, to include changing the foreground color.  There is no UI to do this and the Router Address color is not configurable.  We plan to correct this by the final release.  Ideally, we would also like to expand the "Edge Style Properties" subsystem to encompass nodes as well, allowing for conditional styling of individual nodes.</p>
+            </aside>
+            <div class="ImageBlock">
+                <img src="images\screenshots\LogicalGraph.ExampleNodeExpanded.png" />
+                <p>Figure 6: Logical Graph Node (expanded to show child nodes)</p>
+            </div>
+            <p>As can be seen in the above image, when the Node is expanded, the edge is redirected to point to the specific endpoint where the communication happened.  The default coloring for an edge is to form a gradient between the colors of the endpoints.</p>
+            <aside>
+                <p>I won't lie; gradient edges were added primarily to give competition to curved edges as most-controversial-feature.  In order to implement it well we started using edges made from a finite number of segments with endpoints uniformly (uniform with respect to the domain of the curve function, not the resulting coordinates) spaced along the curve.  Initially this was intended to be a temporary solution while establishing proof-of-concept, but for large graphs had a significant performance gain associated with it, so it became the new standard.  The <code>grassmarlin.plugins.internal.logicalview.visual.DirectedCurve</code> class creates an instance of the <code>EstimatedCubicCurve</code> class, and the number of segments is passed to the constructor.  If necessary, this can be changed, but it must be changed in code at this time.<!--  Using a JavaFx CubicCurve object with a gradient for the stroke doesn't work.  Gradients shade as a function of screen coordinates, not as a function of the curve function's domain.-->  If it wasn't for the performance gains<!-- and the controversy over which is the most-hated-feature-->, the gradient edges feature would have been removed long ago.</p>
+            </aside>
+        </div>
+    </div>
+
+    <h2 id="LogicalGraph.Aggregate">Aggregates</h2>
+    <div class="collapsible">
+        <p>TODO: Explain how to change grouping / what aggregates are</p>
+        <p>TODO: Explain how to manipulate groups</p>
+    </div>
+
+    <aside>
+        <p>The Logical Graph has been redesigned in 3.0, 3.2, and now in 3.3.  The goal is always the same, but how we get there changes.  The look-and-feel is similar to 3.2, and if you are familiar with 3.2 you can probably figure out 3.3 on your own.</p>
+    </aside>
+    <p>TODO: Document Logical Graph</p>
+</div>
+
+<h1 id="4">4 Physical Graph</h1>
+<div class="collapsible">
+    <aside>
+        <p>The Physical Graph is not yet fully implemented.  As of GrassMarlin 3.3.0Beta3, the Physical Graph displays some data, but not all the data it is intended to convey.  It is undergoing active development.  If you need access to the Physical Graph, GrassMarlin 3.2 is considered the best build at present.  There is nothing wrong with the Physical Graph in GrassMarlin 3.3, however there is no support for Cisco files at this time, and the Physical Graph is incomplete.</p>
+    </aside>
+    <p>While the Logical Graph is concerned with the endpoints that send and receie data, the Physical Graph is concerned with how those endpoints are physically connected.  The Physical Graph is composed of Endpoints, each of which are identified by a unique Hardware Address.  Some of these Endpoints belong to Devices, and any Endpoint that is owned by a device is known as a Port (it is still an Endpoint, a Port is just a specific class of Endpoint).  A Cloud represents a section of unknown network topology.  This is a needlessly complicated way of saying that a Cloud is created when we know we need to connect a group of Endpoints, but not how to connect them.  Clouds and Endpoints can be connected by Wires, but each Endpoint can only connect to a single Wire.</p>
+    <aside>
+        <p>That last part is technically false; a Cloud is an endpoint that can have any number of connections.  It is, technically, an Endpoint, but only in the technical sense; it is a conceptually a distinct class of element.</p>
+        <p>In GrassMarlin 3.3, the Physical Graph does not require router and switch configurations.  It is still best to provide this information, but a best-guess is made in response to all traffic data.</p>
+    </aside>
+    <p>TODO: Document Physical Graph</p>
+</div>
+<h1 id="PipelineStages">5 Pipeline Stages</h1>
+<div class="collapsible">
+    <p>Plugins are free to define new Pipeline Stages, but there is a collection of stages that are always loaded as part of the core GrassMarlin 3.3 functionality.  Several of these stages perform key operations in constructing the Logical Graph and Physical Graph, while others perform supplemantary data lookups or key bookkeeping for tracking import progress.  The default pipeline is meant to be used as a template for new pipelines.  Creating a new Pipeline is not intended to be a common task; there is no compelling reason to use a non-default pipeline unless you need to leverage capabilities in Plugins.</p>
+    <p>Some of the stages described below are indicated to operate in Passive Mode.  By default, when a Pipeline Stage receives an Object as input, it is checked against the list of Input Types.  If it matches an entry on the list of Input Types, it is placed into the processing queue.  Otherwise, it is routed to the Outputs.  As  result of this, the order of Objects in the Pipeline will change.  A Pipeline Stage that is operting in Passive Mode instead copies all accepted inputs to the queue just as in Active Mode, but outputs all inputs immediately as well.  New items may be inserted into the Pipeline, but the order of Objects will not be changed.</p>
+    <p>The descriptions in this section are presented with technical information to help facilitate Plugin development; these technical details remain irrelevant for general use.</p>
+    <aside>
+        <p>We expect that a development team working with plugins or a team lead for an analysis group would define a template that would be added to workstations being used for an evaluation.  Certainly on a smaller scale a sole user could fill all of these roles, but it is important to note that this is not intended to be a common task--in GrassMarlin 3.3, it is possible to do this to support the rare cases where it is useful, whereas in earlier versions it was not possible at all without significant and invasive changes to the GrassMarlin code.</p>
+    </aside>
+    <h2 id="PipelineStages.core">Core Pipeline Stages</h2>
+    <div class="collapsible">
+        <p>The Pipeline Stages described in this section are part of the GrassMarlin 3.3 core and will always be available.</p>
+        <h3 id="PipelineStages.core.RecordLogicalPacketData">Record Logical Packet Data</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                        <tr>
+                            <th>Input Type(s)</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.ILogicalPacketMetadata</code></td>
+                            <td>A record that indicates a packet exists.</td>
+                            <td>The packet record is added to the appropriate edge in the Logical Graph.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                        <tr>
+                            <th>Output Name</th>
+                            <th>Formal Type(s)</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Default</td>
+                            <td><code>java.lang.Object</code></td>
+                            <td>Every object passed to this stage is sent to the Default Output.</td>
+                        </tr>
+                        <tr>
+                            <td>Tcp</td>
+                            <td><code>grassmarlin.session.pipeline.ITcpPacketMetadata</code></td>
+                            <td>Input objects describing TCP Packets are also output here.</td>
+                        </tr>
+                        <tr>
+                            <td>Udp</td>
+                            <td><code>grassmarlin.session.pipeline.IUdpPacketMetadata</code></td>
+                            <td>Input objects describing UDP Packets are also output here.</td>
+                        </tr>
+                        <tr>
+                            <td>Pcap</td>
+                            <td><code>grassmarlin.session.pipeline.IPacketData</code></td>
+                            <td>Input objects that contain packet contents are also output here.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="inapplicable">
+                            <td colspan="3"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>Recording a packet for an edge which doesn't exist may produce an error.</li>
+                    <li>As the metadata for every packet is tracked, memory consumption increases linearly with respect to the number of recorded packets.</li>
+                    <li>This stage operates in Passive Mode.</li>
+                    <li>The packet metadata is stored as part of the Logical Graph.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>This stage is responsible for recording packets that connect two endpoints on the Logical Graph.  Packets recorded by this stage will be listed in the "View Packets..." dialog and will contribute to the weighting when Weighted Edges are enabled.</p>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.CreateNetworksFromLogicalAddresses">Create Networks From Logical Addresses</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.LogicalAddressMapping</code></td>
+                            <td>An association between a Hardware Address (such as a MAC) and a Logical Address (such as an IP)</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                        <tr>
+                            <th>Output Name</th>
+                            <th>Formal Type(s)</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Default</td>
+                            <td><code>java.lang.Object</code></td>
+                            <td>Every object passed to this stage is sent to the Default Output.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="inapplicable">
+                        <td colspan="3"> </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>This stage operates on Logical Address Mappings where the Logical Addresses is a <code>grassmarlin.session.logicaladdresses.Ipv4</code>, <code>grassmarlin.session.logicaladdresses.Ipv4WithPort</code>, or <code>grassmarlin.session.logicaladdresses.Cidr</code>.</li>
+                    <li>this stage operates in Passive Mode.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>This Stage informs the Session that a Network exists (with a confidence of 4 - Medium Low) defined as the /24 CIDR containing the reported address.</p>
+                </div>
+            </div>
+            <aside>
+                <p>As of this writing a /24 is always created.  This stage predates the ability to configure individual stages, but we intend to add configuration support to allow the Cidr size to be changed.</p>
+            </aside>
+        </div>
+        <h3 id="PipelineStages.core.CreateBasicGraphElements">Create Basic Graph Elements</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>java.lang.Object</code></td>
+                            <td>Everything</td>
+                            <td>This stage accepts all objects, however specific actions are invoked for certain types, detailed below.</td>
+                        </tr>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.IIcmpPacketMetadata</code></td>
+                            <td>A record of an ICMP packet.</td>
+                            <td>If this packet is anything other than a ping response then it is routed only to the questionable Packets Output.</td>
+                        </tr>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.ILogicalPacketMetadata</code></td>
+                            <td>A record of a packet.</td>
+                            <td>The Session is updated to contain an edge between the endpoints of the packet (if the edge does not already exist).</td>
+                        </tr>
+                        <tr>
+                            <td><code>grassmarlin.session.Session.HardwareAddressPair</code></td>
+                            <td>A link between Hardware Addresses.</td>
+                            <td>An edge is created in the Session between the two Hardware Addresses.</td>
+                        </tr>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.LogicalAddressMapping</code></td>
+                            <td>A Logical Address and Hardware Address that are associated.</td>
+                            <td>A Logical Vertex is created in the session for this mapping.</td>
+                        </tr>
+                        <tr>
+                            <td><code>grassmarlin.session.HardwareAddress</code></td>
+                            <td>A Hardware Address that exists within the network.</td>
+                            <td>A Hardware Vertex is created in the Session.</td>
+                        </tr>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.Network</code></td>
+                            <td>A Logical Address that can contain other Logical Addresses.</td>
+                            <td>This network is added to the list of networks in the Session.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Default</td>
+                            <td><code>java.lang.Object</code></td>
+                            <td>Most input objects are output here, however <code>HardwareAddress</code>, <code>LogicalAddressMapping</code>, and <code>ILogicalPacketMetadata</code> objects are not.</td>
+                        </tr>
+                        <tr>
+                            <td>Hardware Addresses</td>
+                            <td><code>grassmarlin.session.HardwareAddress</code></td>
+                            <td>All observed HardwareAddress objects are passed to this output.</td>
+                        </tr>
+                        <tr>
+                            <td>Address Mappings</td>
+                            <td><code>grassmarlin.session.pipeline.LogicalAddressMapping</code></td>
+                            <td>All observed LogicalAddressMapping objects are passed to this output.</td>
+                        </tr>
+                        <tr>
+                            <td>Recordable Packets</td>
+                            <td><code>grassmarlin.session.pipeline.ILogicalPacketMetadata</code></td>
+                            <td>All ILogicalPacketMetadata objects which are recorded in the Session as Logical Edges are reported here.</td>
+                        </tr>
+                        <tr>
+                            <td>Questionable Packets</td>
+                            <td>N/A</td>
+                            <td>Pakcets which fail to pass internal filters are output here.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="inapplicable">
+                        <td colspan="3"> </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>This stage accepts everything because many later stages depend on modifications having being made to the Session by this stage.  Accepting everything and operating in Active mode ensures that operations happen in sequence and any side effects are resolved before the next stage receives an object.</li>
+                    <li>The <code>IIcmpPacketMetadata</code> interface is derived from <code>ILogicalPacketMetadata</code>.  The filtering of Icmp packets that are not ping responses happens before the Session is updated.</li>
+                    <li>Behavior is undefined if an attempt is made to reference a Hardware Address before the corresponding HardwareAddress property has been referenced, and likewise for LogicalAddressMapping objects.</li>
+                    <li>The "Questionable Packets" output, at present, receives all ICMP traffic aside from Ping responses.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>This stage is responsible for building vertex and edge lists in the Session, as well as the list of Networks.  The vertices and edges form two disjoint (but related) graphs which, in turn, form the basis for the Logical and Physical Graphs.</p>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.SetProperties">Set Properties</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.IHasHardwareVertexProperties</code>, <code>grassmarlin.session.pipeline.IHasLogicalVertexProperties</code>, <code>grassmarlin.session.pipeline.IHasPhysicalConnectionProperties</code>, <code>grassmarlin.session.pipeline.IHasLogicalConnectionProperties</code></td>
+                            <td>Associations of groups of properties and a source with a core Session element.</td>
+                            <td>All of the properties of the specified element for the given source are replaced with the properties in this object.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Default</td>
+                        <td><code>java.lang.Object</code></td>
+                        <td>Every object passed to this stage is sent to the Default Output.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="inapplicable">
+                        <td colspan="3"> </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>See the section on <a href="#Properties">Properties</a> for an explanation of what Properties are and how they are used.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>The Set Properties stage is closely related to the Add Properties stage.  Both adjust the properties of Session elements, but Set Properties replaces all the properties from a given source for an element with a new set.  Most often, Add Properties is the desired action, but Set Properties is useful when reporting transient state information, where only a single state is valid at any point in time.  The "Reachable" proeprty that is set by the Ping Plugin, for example, should only ever have one value, and that value should be the most recently reported value.</p>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.AddProperties">Add Properties</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>grassmarlin.session.pipeline.IHasHardwareVertexProperties</code>, <code>grassmarlin.session.pipeline.IHasLogicalVertexProperties</code>, <code>grassmarlin.session.pipeline.IHasPhysicalConnectionProperties</code>, <code>grassmarlin.session.pipeline.IHasLogicalConnectionProperties</code></td>
+                        <td>Associations of groups of properties and a source with a core Session element.</td>
+                        <td>The properties in this object are added to the specified element attributed to the given source.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Default</td>
+                        <td><code>java.lang.Object</code></td>
+                        <td>Every object passed to this stage is sent to the Default Output.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="inapplicable">
+                        <td colspan="3"> </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>See the section on <a href="#Properties">Properties</a> for an explanation of what Properties are and how they are used.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>The Add Properties stage is closely related to the Set Properties stage, and is most often the preferred method of changing properties.  The properties passed to this stage are added to any existing properties, allowing for the accumulation of information over time as new information becomes available, preserving information that was previously reported.</p>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.RecordDeferredProgress">Record Deferred Progress</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.IDeferredProgress</code></td>
+                            <td>An indicator of import progress that is made when leaving the pipeline.</td>
+                            <td>The import item has its progress incremented by the specified amount.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Default</td>
+                        <td><code>java.lang.Object</code></td>
+                        <td>Every object passed to this stage is sent to the Default Output.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="inapplicable">
+                        <td colspan="3"> </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>IPacketMetaData is derived from IDeferredProgress.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>This stage is used to update the import progress of a file<!--, which is distinct from the import porgress (which I have accidentally typed 7 times so far today).  While progress is a measure of completion, porgress is a measure of how much time remains until 15 December 2017-->.  If this is not performed, imports may appear to stop before reaching completion.  If it is performed before all processing is complete then completion will be marked prematurely.</p>
+                    <aside>
+                        <p>GrassMarlin 3.0 had bugs where progress was recorded as a file was parsed rather than waiting for processing to complete (it also had bugs where parsed data might never be processed).  The model of waiting for processing to complete before recording progress originated there, and has persisted since.  It is only recently, with the latest rework of the Fingerprinting engine, that the processing pipeline is no longer the performance bottleneck--disk I/O is now the bottleneck.  In light of this shift, the idea of "deferred progress" has lost merit, but it persists because the variable nature of a customizable pipeline may make it relevant, even if the default pipeline is fast enough that the distinction between immediate and deferred progress is insignificant.</p>
+                    </aside>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.MetadataLookup">Metadata Lookup</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>grassmarlin.session.HardwareAddress</code></td>
+                        <td>A Hardware Address that exists within the network.</td>
+                        <td>If this Hardware Address is a MAC, then an OUI lookup is performed.</td>
+                    </tr>
+                    <tr>
+                        <td><code>grassmarlin.session.pipeline.LogicalAddressMapping</code></td>
+                        <td>A Logical Address and Hardware Address that are associated.</td>
+                        <td>If the Logical Address is an IPv4 address then a GeoIp lookup is performed.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Default</td>
+                            <td><code>java.lang.Object</code></td>
+                            <td>Every object passed to this stage is sent to the Default Output as well as generated geolocation and manufacturer information.</td>
+                        </tr>
+                        <tr>
+                            <td>Geolocation</td>
+                            <td><code>grassmarlin.plugins.internal.metadata.StageApplyMetadata.Geolocation</code></td>
+                            <td>Generated Geolocation lookups are output here, in addition to the default output.</td>
+                        </tr>
+                        <tr>
+                            <td>Manufacturer</td>
+                            <td><code>grassmarlin.plugins.internal.metadata.StageApplyMetadata.Manufacturer</code></td>
+                            <td>Generated Manufacturer lookups are output here, in addition to the default output.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="inapplicable">
+                            <td>IPv4 Geolocation</td>
+                            <td><code>java.lang.Boolean</code></td>
+                            <td>Controls whether or not this stage will perform Geolocation lookups on IPv4 addresses.</td>
+                        </tr>
+                        <tr>
+                            <td>OUI Lookup</td>
+                            <td><code>java.lang.Boolean</code></td>
+                            <td>Controls whether or not this stage will attempt to identify the manufacturer associated with MAC Addresses.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>This stage operates in Passive Mode.</li>
+                    <li>This stage utilizes a cache ensuring that a lookup is only performed once per distinct input object.  If the cache contains an entry for a given output, no output is generated.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>This stage performs a GeoIp lookup on Ipv4 addresses and a OUI lookup to determine the manfacturer of MAC addresses.  The OUI lookup is only performed if GrassMarlin can access the "manuf" file which is included with Wireshark.  The generated Manufacturer and Geolocation values implement the <code>IHasHardwareVertexProeprties</code> and <code>IHasLogicalVertexProperties</code> interfaces, respectively.</p>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.Fingerprint">Fingerprint</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>grassmarlin.session.pipeline.ILogicalPacketMetadata</code></td>
+                            <td>A record of a packet.</td>
+                            <td>Each packet is tested against all enabled Fingerprints.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Default</td>
+                        <td><code>java.lang.Object</code></td>
+                        <td>Every object passed to this stage is sent to the Default Output.</td>
+                    </tr>
+                    <tr>
+                        <td>Fingerprint Properties</td>
+                        <td><code>grassmarlin.plugins.internal.fingerprint.FingerprintVertexProperties</code>, <code>grassmarlin.plugins.internal.fingerprint.FingerprintEdgeProperties</code></td>
+                        <td>When a fingerprint matches a packet, objects that describe the generated properties are sent to this output.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td colspan="3">See the description below for configuration information.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>The generated properties are not sent to the default output, only the Fingerprint Properties output.</li>
+                    <li>FingerprintVertexProeprties and FingerprintEdgeProperties implement <code>IHasLogicalVertexProperties</code> and <code>IHasLogicalConnectionProperties</code>, respectively.</li>
+                    <li>Fingerprints can be created in the <a href="#FingerprintManager">Fingerprint Manager</a>.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>The Fingerprint stage is responsible for testing packets against a set of fingerprints.  The configuration allows for individual fingerprints to be turned on or off using a context menu; checked items are enabled.</p>
+                    <p>If a fingerprint matches a packet, the edge corresponding to that packet will have the Fingerprint property updated to include the name of the matched fingerprint with a confidence of 0 (User).</p>
+                    <aside>
+                        <p>The fingerprinting capabilities are largely unchanged from GrassMarlin 3.0.  The schema has been adjusted slightly, but we've tried to avoid any breaking changes to the fingerprint files themselves.  The processing, however, has undergone significant changes.  Fingerprinting has long been the largest performance bottleneck and, in earlier versions, that bottleneck was a necessity to throttle the rate at which the UI needed to be updated.  We've long acknowledged that faster would be better, but the performance has always been regarded as adequate, and so fingerprinting never received critical attention.  All of the performance gains from 3.0 onwards started with a chance realization that there was a major<!-- failure to think during initial design and development leading to a --> design flaw in how fingerprinting was handled and then fixing that flaw.  This fix would deliver an order-of-magnitude performance boost and so we would continue to ignore the performance of fingerprinting because if it used to be adequate and it was now better, then our time is still better spent on things that are worse than adequate.  This cycle would repeat, with random eureka moments driving the optimization of fingerprinting.</p>
+                    </aside>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.Pulse">Pulse</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="inapplicable">
+                            <td colspan="3"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Default</td>
+                        <td><code>grassmarlin.plugins.internal.graph.StagePulse.Pulse</code></td>
+                        <td>Every object passed to this stage is sent to the Default Output.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Frequency (ms)</td>
+                        <td>integer</td>
+                        <td>The frequency (in milliseconds) at which this stage will generate pulses.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>It is possible to provide input objects to this stage; this will result in an error.</li>
+                    <li>The frequency is implemented as a delay between pulses.  This shouldn't have any perceptible impact except over very long time spans.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>This stage generates Pulse objects at a fixed interval.  Each pulse is generated with a sequence number (each Pulse stage maintains its own sequence number, starting from 0).</p>
+                    <p>A Pulse object is used to trigger behaviors in other Pipeline Stages, such as the <a href="#PipelineStages.core.Broadcast">Broadcast</a> stage.</p>
+                </div>
+            </div>
+        </div>
+        <h3 id="PipelineStages.core.Broadcast">Broadcast</h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>java.lang.Object</code></td>
+                            <td>All inputs.</td>
+                            <td>Inputs that are not <code>grassmarlin.plugins.internal.graph.StagePulse.Pulse</code> objects are added to a cache.</td>
+                        </tr>
+                        <tr>
+                            <td><code>grassmarlin.plugins.internal.graph.StagePulse.Pulse</code></td>
+                            <td>Pulses generated by a Pulse stage.</td>
+                            <td>When a pulse is received the contents of the cache are sent to the default output.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Default</td>
+                            <td><code>java.lang.Object</code></td>
+                            <td>When a pulse is received, the cached object list is output to the Default Output.</td>
+                        </tr>
+                        <tr>
+                            <td>Pulse</td>
+                            <td><code>grassmarlin.plugins.internal.graph.StagePulse.Pulse</code></td>
+                            <td>When a Pulse is received it is sent to this output.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Forget after broadcast</td>
+                        <td>boolean</td>
+                        <td>When enabled, the cache will be cleared after every pulse.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li>The order of outputs is not guaranteed to match the inputs.</li>
+                    <li>The outputs will be the unique inputs--receiving the same object multiple times will result in only a single instance being output for each pulse.</li>
+                    <li>The cache is shared by all Broadcast objects with the same name (it is part of the configuration)</li>
+                    <li>Saving and loading the cache may have issues.</li>
+                    <li>Maintaining the cache can use a lot of memory.</li>
+                </ul>
+                <div class="TextDescription">
+                    <p>The Broadcast stage remembers objects it has received and outputs every received object whenever a Pulse is received.  Optionally, the cache can be cleared whenever this happens.</p>
+                    <p>With the inclusion of the iadgov.ping Plugin, this allows for all hosts on a network to be pinged at regulat intervals to detect hosts that become unresponsive.</p>
+                </div>
+            </div>
+        </div>
+
+        <!--
+        <h3 id="PipelineStages.core."></h3>
+        <div class="collapsible">
+            <div class="StageDescription">
+                <table class="InputBlock">
+                    <thead>
+                    <tr>
+                        <th>Input Type(s)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <table class="OutputBlock">
+                    <thead>
+                    <tr>
+                        <th>Output Name</th>
+                        <th>Formal Type(s)</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Default</td>
+                            <td><code>java.lang.Object</code></td>
+                            <td>Every object passed to this stage is sent to the Default Output.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="Configuration">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="inapplicable">
+                        <td colspan="3"> </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="UsageNotes">
+                    <li></li>
+                </ul>
+                <div class="TextDescription">
+                    <p></p>
+                </div>
+            </div>
+        </div>
+        -->
+    </div>
+    <h2 id="PipelineStages.official">Plugin-Defined Pipeline Stages</h2>
+    <div class="collapsible">
+        <p>TODO: Describe the stages in official plugins</p>
+    </div>
+</div>
+<h1 id="6">6 Official Plugins</h1>
+<div class="collapsible">
+    <p>In addition to the capabilities that are built into GrassMarlin 3.3, several Plugins are made available to expand on the initial capability offerings of this version.  Adding a plugin tends to impose some degree of overhead--some simply provide additional options and require a token amount of memory, while others can consume a significant amount of processing power.  It is always recommended that the fewest number of plugins necessary be loaded whenever possible--this helps to ensure compatibility when saving and loading a session.  Different plugins are intended to complement different use cases, and so simply including every plugin is generally considered a bad idea.</p>
+    <p>Several of the Plugins that are available through the GrassMarlin GitHub page are listed here with a short description, although this is not necessarily a complete list.</p>
+    <aside>
+        <p>Using all the plugins at once <em>is</em> a bad idea, but this is also how we usually test the application.  It won't break anything, but menus will fill up with commands that are not relevant to the current use case, performance will suffer, and it can be an impediment to sharing session files.</p>
+    </aside>
+
+    <h2 id="6.iadgov.active.querystatus">iadgov.active.querystatus</h2>
+    <div class="collapsible">
+        <p>This Plugin adds a Pipeline Stage that can be used to query a remote host for a status and compare it to a previous value.  The result of this comparison can change the properties of the host being queried.  This is an ACTIVE plugin which generates network traffic.</p>
+        <aside>
+            <p>We do not intend this plugin to be useful on its own, rather we intend it to act as a template for creating other plugins which perform this basic task.  The more abstract a task like this is made the less useful it becomes; this implementation is so abstract it has about as much value as a startup's stock options.<!-- This was going to be a comment about millenials instead of startups, but we couldn't decide on an appropriate analogy.  Contenders included a millenial's stock portfolio, education, startup idea, and future. -->  Deep inspection of the response to set multiple properties would be far more valuable, but is impossible to abstract in any useful manner.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.bro2connparser">iadgov.bro2connparser</h2>
+    <div class="collapsible">
+        <p>This Plugin allows for the reading of Bro2 Conn files.</p>
+        <aside>
+            <p>An intern wrote this plugin for us, and it appears to work (he didd a good job), but without having spent time to look at it, there isn't anything that can be said here reagarding the quality and capabilities.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.diff">iadgov.diff</h2>
+    <div class="collapsible">
+        <p>This Plugin adds a few basic tools for performing various sorts of Diff operations.</p>
+        <aside>
+            <p>Many people have requested this capability, but nobody has offered a comprehensive vision for how it would be used, and the little bits that have been offered indicate several varied use cases.  For this reason this is an initial capability designed to be quite abstract but offer capabilities that could be leveraged in more user-focused tools.  That said, while developing this plugin many of the functions ended up in the core Logical Graph, so this Plugin does very little on its own.</p>
+        </aside>
+        <p>The two capabilities this plugin offers are the ability to create a Pipeline Stage that assigns properties to nodes and to mark all nodes with a timestamped "Diff Baseline" property.  When combined with Edge Style Rules, this allows for several variations on highlighting new and/or old content.</p>
+        <aside>
+            <p>Apparently I never finished writing this plugin--either I never implemented some capabilities or I never cleaned up obsolete code.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.directorywatcher">iadgov.directorywatcher</h2>
+    <div class="collapsible">
+        <p>This Plugin adds the ability to watch one or more directories for new files that, optionally, have a name matching a pattern.  Files that match the pattern (or all detected files if no pattern is specified) are then imported into the current session.</p>
+    </div>
+
+    <h2 id="6.iadgov.example.tab">iadgov.example.tab</h2>
+    <div class="collapsible">
+        <p>This Plugin does nothing meaningful within the context of GrassMarlin use.  It does, however, act as an example of how to create a Tab that is added to the GrassMarlin UI.</p>
+        <aside>
+            <p>Adding this Plugin actually forced our hand to revise how Plugins create Tabs.  This change was for the best, but it broke backwards compatibility within the Plugin API.  Anyone that has been working with custom Tabs in an earlier 3.3 Beta release will need to change how things are done.  The new Tabs integrate into the Edit and View menus.  There are plans to expand on the Edit menu beyond undo/redo, but these plans may never come to fruition.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.importcompletealert">iadgov.importcompletealert</h2>
+    <div class="collapsible">
+        <p>This Plugin adds the ability to run a shell command whever an import completes.  This is not a well-tested capability as the shell command execution from Java necessarily has platform-specific quirks.</p>
+        <aside>
+            <p>The intent here is to play a sound, send an email, or otherwise notify a user that a long-running import has completed.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.logicalgraph.groupedports">iadgov.logicalgraph.groupedports</h2>
+    <div class="collapsible">
+        <p>This Plugin adds a context menu command to the Logical Graph that allows for a node to be marked as a Router Port.  This change cannot be reversed; loading an earlier Session file or starting a new Session is required to undo this operation.</p>
+        <p>When a Router Port is created, a new node is created with the designated node's Hardware Address.  Every Logical Graph node that has this Hardware Address becomes a child of this new node.  Most frequently, this means that multiple IP Addresses that share a common MAC will be grouped together.  This is typically the case for Routers, although it may indicate other situations as well.</p>
+    </div>
+
+    <h2 id="6.iadgov.logicalgraph.manualproperties">iadgov.logicalgraph.manualproperties</h2>
+    <div class="collapsible">
+        <p>This Plugin adds a context menu command to modify the properties of a node on the Logical Graph.  These properties will be added with a confidence of 0 (User) which is the highest possible priority.</p>
+        <aside>
+            <p>The "User" confidence is used in a few other places and represents 100% confidence.  The Ping Plugin, for example, sets a property to true or false depending on whether or not it was able to ping the targeted host, and uses the User priority for this.  100% certainty within GrassMarlin does not represent an indisputable, objective fact, it indicates information that we cannot improve upon, and will therefore always display.  Use this sparingly.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.physical.cisco">iadgov.physical.cisco</h2>
+    <div class="collapsible">
+        <p>This Plugin is supposed to handle parsing Cisco config files, consistent with earlier versions of GrassMarlin (although hopefully better).  Instead, it is broken and doesn't compile.</p>
+        <aside>
+            <p>We did a major refactoring to the Physical Graph and never fixed the Cisco import.  We plan to, but it is a low priority right now; it should be present for the official 3.3.0 release.  At this time there is no support for this Plugin and the build script we use simply ignores this Plugin.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.ping">iadgov.ping</h2>
+    <div class="collapsible">
+        <p>TODO: Document ping</p>
+    </div>
+
+    <h2 id="6.iadgov.teamcolors">iadgov.teamcolors</h2>
+    <div class="collapsible">
+        <p>This Plugin adds the ability to use NFL team colors for new groups on the Logical Graph.</p>
+        <aside>
+            <p>This was the most-requested feature when we asked for feedback while demoing GrassMarlin 3.2.  It even beat out the Diff capability (although not by much).  Quite frankly, I'm disappointed by that fact, but I'm also the only person on the team that just doesn't care about the sport.<!-- A fact that, surprisingly, is unrelated to why I am the one writing the documentation. -->  I'd love to stay and explain this Plugin in more detail, but I'm not going to.<!-- A butchering of one of my favorite Sombra lines. --></p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.timefilter">iadgov.timefilter</h2>
+    <div class="collapsible">
+        <p>This Plugin allows for input Pcap to be subject to a filter which excludes packets that fall outside a given time range.  This is implemented by a Pipeline Stage that can be configured to use defaults provided as command-line arguments.</p>
+        <aside>
+            <p>This Plugin was written before individual Pipeline Stages could be configured, and as such it is a little crude compared to the full capabilities it could bring to bear.  We will probably revise it before release, but hte basic functionality should remain unchanged.</p>
+        </aside>
+    </div>
+
+    <h2 id="6.iadgov.visualpipeline">iadgov.visualpipeline</h2>
+    <div class="collapsible">
+        <p>This Plugin creates a new Tab which provides (once imports have started) a visual depiction of the current Pipeline.  This is intended to be used as a developer tool to troubleshoot Pipeline Stages and new Pipelines.  As a developer tool, there is no support offered for this Plugin.  Loading this plugin introduces a non-trivial CPU load.</p>
+        <aside>
+            <p>The CPU load has, over time, been reduced significantly.  We still wouldn't advise loading it unless you are actively engaged in development activity, although if you intend to adapt GrassMarlin to a watch floor type of environment, it may be useful to keep an eye on various metrics.</p>
+        </aside>
+    </div>
+</div>
+<!-- We're going to skimp on indentation for the Plugin Development section since it screws up the code blocks -->
+<h1 id="PluginDevelopment">7 Plugin Development</h1>
+<div class="collapsible">
+<p>Plugins are Java files which can be loaded at runtime to add new behaviors to GrassMarlin, or to modify existing behaviors.  Each Plugin must provide a class, named Plugin, within a package that matches the Plugin's name (e.g. the iadgov.ping Plugin provides the iadgov.ping.Plugin class).  This class must implement the grassmarlin.plugins.IPlugin interface.  The grassmarlin.plugins.IPlugin interface contains several additional interfaces, each of which addresses a specific behavior.</p>
+<aside>
+    <p>It is our goal to facilitate widespread Plugin development, but make no mistake--this is intended for experienced software developers.  This is not a tutorial but reference documentation.</p>
+</aside>
+
+<h2 id="7.1">7.1 Plugin Interfaces</h2>
+<div class="collapsible">
+<p>This section details the interfaces that comprise the Plugin architecture.</p>
+<p>Every Plugin interface contained within IPlugin inherits from IPlugin; a class that is not an IPlugin has no meaning to the Plugin architecture.</p>
+</div>
+
+<h3 id="7.1.1">7.1.1 grassmarlin.plugins.IPlugin</h3>
+<div class="collapsible">
+<code class="block"
+>//There should be a constructor that takes a RuntimeConfiguration as the only parameter.
+String getName();
+Collection&lt;MenuItem&gt; getMenuItems();
+</code>
+<p>This interface establishes that a class is a Plugin that should be loaded.  It will be instantiated by calling a constructor that takes a grassmarlin.RuntimeConfiguration object as its sole parameter.  The construction will happen prior to UI initialization, and so should refrain from attempting to interact with the UI subsystem.</p>
+<p>The value returned by <code>getName()</code> is the Display Name for the Plugin.  While the package of the Plugin class is used internally to identify the Plugin, this is the value that will be shown to the user.</p>
+<p>the result of <code>getMenuItems()</code> will be added to a Manu for the Plugin.  If this result is null, it is treated as if it was an empty list.  Note that the menu items for the Plugin have no concept of the Session on which they are operating--the Menu exists at the application level where multiple Sessions might be open, so they should refrain from manipulating the session directly.</p>
+</div>
+
+<h3 id="7.1.2">7.1.2 grassmarlin.plugins.IPlugin.HasVersionInfo</h3>
+<div class="collapsible">
+<code class="block"
+>String getVersion();
+</code>
+<p>This interface allows a plugin to identify its version for display in the About dialog.  This may also have relevance with resolving plugin version conflicts.</p>
+</div>
+
+<h3 id="7.1.3">7.1.3 grassmarlin.plugins.IPlugin.AcceptsCommandLineArguments</h3>
+<div class="collapsible">
+<code class="block"
+>boolean processArg(final String arg);
+</code>
+<p>Arguments can be passed to Plugins from the command line using the <code>-configurePlugin</code> or <code>-P</code> commands.  Both behave identically.  If the parameter that follows the command contains a colon (":") character, the portion before the colon is the name of the Plugin to receive the parameter and the portion after is the value to send to the Plugin.  Alternatively, if no colon is present, the parameter after the command is the name of the Plugin and the next parameter is the value to send.</p>
+<p>Each Plugin can receive only a single parameter.</p>
+</div>
+
+<h3 id="7.1.4">7.1.4 grassmarlin.plugins.IPlugin.DefinesPipelineStages</h3>
+<div class="collapsible">
+<code class="block"
+>Collection&lt;PipelineStage&gt; getPipelineStages();
+default Serializable getConfiguration(PipelineStage stage, Serializable configuration) {
+    return null;
+}
+
+default Serializable getDefaultConfiguration(PipelineStage stage) {
+    return null;
+}
+</code>
+<p>The <code>PipelineStage</code> class contains the following fields:</p>
+<code class="block"
+>private final boolean configurable;
+private String name;
+private final Class&lt;? extends AbstractStage&lt;Session&gt;&gt; stage;
+private final Set&lt;String&gt; outputs;
+</code>
+<p>The <code>getPipelineStages()</code> method returns the information needed to describe a new Pipeline Stage to the user.  Stages are expected to inherit from the AbstractStage class, which operates on a generic container.  For GrassMarlin 3.3.0, this container is specifically the grassmarlin.session.Session class.</p>
+<p>When a Stage is configurable, the <code>getConfiguration(PipelineStage, Serializable)</code> method is called to change the configuration.  The current configuration is passed as a parameter and the method is expected to return the new configuration.  This operation is permitted to block--it is expected that this method will test for the current UI environment and engage the user appropriately.  In SDI mode, this would likely mean launching a JavaFX Dialog, while in CLI mode console interaction is in order.</p>
+<p>The <code>getDefaultConfiguration(PipelineStage)</code> method returns the initial configuration for the specified PipelineStage object.  This is called when a configuration is needed for a new object.</p>
+<p>Configurable Pipeline Stages are configured <i>by type and name</i>.  Two Stages of the same type with different names will reference different configurations.  If one is renamed to match the name of the other, it will also adopt the configuration of the other, and changes to one will affect both.</p>
+</div>
+
+<h3 id="7.1.5">7.1.5 grassmarlin.plugins.IPlugin.HasClassFactory</h3>
+<div class="collapsible">
+<code class="block"
+>Collection&lt;ClassFactory&lt;?&gt;&gt; getClassFactories();
+</code>
+<p>The <code>ClassFactory</code> class is an interface with the following methods:</p>
+<code class="block"
+>String getFactoryName();
+Class&lt;T&gt; getFactoryClass();
+T createInstance(final String text);
+boolean validateText(final String text);
+</code>
+<p>This behavior exists to allow plugins to provide StringConverter-like behavior that can be exposed to the user.  The <code>validateText(String)</code> and <code>getFactoryName()</code> methods provide additional information and feedback that can be leveraged by the UI.  The purpose of this interface is to permit the user to create objects from a string--there is no object-to-string conversion.</p>
+<p>The <code>grassmarlin.ui.common.controls.ObjectField</code> control allows the user to enter any value for which a <code>ClassFactory</code> is defined, optionally filtering to only those that provide objects which are subclasses of a given root.</p>
+</div>
+
+<h3 id="7.1.6">7.1.6 grassmarlin.plugins.IPlugin.SessionSerialization</h3>
+<div class="collapsible">
+<code class="block"
+>@FunctionalInterface
+interface CallbackCreateStream {
+    OutputStream getStream(final String name, final boolean buffered) throws IOException;
+}
+
+@FunctionalInterface
+interface GetChildStream {
+    InputStream getStream(final String name) throws IOException;
+}
+
+void sessionLoaded(final grassmarlin.session.Session session, final java.io.InputStream stream, final SessionSerialization.GetChildStream fnGetStream) throws IOException;
+void sessionSaving(final grassmarlin.session.Session session, final java.io.OutputStream stream, final SessionSerialization.CallbackCreateStream fnCreateStream) throws IOException;
+</code>
+</div>
+
+<!--
+        interface HasImportProcessors extends IPlugin {
+            Collection<ImportProcessorWrapper> getImportProcessors();
+            Map<Integer, FactoryPacketHandler> getPcapHandlerFactories();
+        }
+        interface SessionEventHooks extends IPlugin {
+            void sessionCreated(final grassmarlin.session.Session session, final grassmarlin.ui.common.TabController tabs);
+            void sessionClosed(final grassmarlin.session.Session session);
+        }
+-->
+</div>
+</body>
+</html>

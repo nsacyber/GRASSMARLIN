@@ -1,342 +1,331 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This is the ANT build script that is used internally by the GRASSMARLIN
-team.  It is not intended to be used by others.  It is, however, provided as a
-reference for users that want one.
 
-The GRASSMARLIN code requires source files to be generated for Fingerprinting.
-The gensrc-Fingerprinting target will do this.  Jaxb is used to turn the schema
-document into Java classes and Antlr is used to build a simple calculation
-parser.
+<!--
+  This is the ANT build script used internally for GrassMarlin development.
+  By necessity, it is tightly coupled to the exact development environment used by the GrassMarlin team.  It is not expected to work outside that environment and is not supported for this reason.  It is provided here as a reference.
 
-The "distribution" target will compile the code and prepare the application
-directory within "./build/app".  This prepares a copy of the application
-directory, however some of the configuration responsibility is carried by the
-installers.  It is the responsibility of the install process to ensure that
-JNetPcap is available and that the appropriate user directories are available
-and that prerequisites (Java, Wireshark) are installed.
+  NOTE: At the time this documentation was written, the Fingerprinting plugin was part of the core
+  GrassMarlin code.  By the time you are reading this, Fingerprinting should have been migrated to
+  a standalone Plugin.  The documentation may be slightly off as a result of this and, since it
+  isn't supported, it falls to you to figure out the changes.  We do not expect any significant
+  deviation, but take what is written here with a grain of salt.
 
-The installer and release targets are used internally and are not supported as
-part of the release.  The Windows installers are built using the WIX Toolset.
-
-Internal development is performed using the IntelliJ IDE.  This build process
-and file structure were designed to work within the IDE.  An appropriate
-JNetPcap library file should be located in the project root to execute or debug
-from within the IDE.  The source code makes extensive use of Java 1.8 features
-and requires a JDK of at least 1.8.66 (NOTE: I think it is 1.8.66 or newer; a
-slightly older build may work, however some earlier versions of 1.8 have issues
-where methods that are used in GRASSMARLIN are declared private).
+  While you are free to use whatever environment you prefer, internal GrassMarlin development is performed on Windows workstations and utilizes the following tools that are not provided here, but that should be freely available online (most recent version is probably your best choice in all cases, except where noted otherwise):
+    JetBrains IntelliJ IDEA
+      - The directory in which this file is distributed is the root for a project.
+      - Each of the directories within plugin_sources is the root for an additional module, which depends on the main project module.
+        - The src directory for each plugin should be flagged as the Sources Root, with a default package matching the plugin's name.
+      - The embedded_resources directories should be flaggged as a Resources Root
+      - The generated-sources directory should be flagged as a Generated Sources Root
+      - The source directory should be flagged as the Sources Root.
+      - All other directories can be flagged as Excluded.
+      - In order to execute the Generate Sources: Fingerprinting build step, you will need to go to the Ant Build interface's Properties dialog and, on the Execution tab, set the Ant command line to "-J-Djavax.xml.accessExternalSchema=file".
+    Microsoft Visual Studio
+      - This is used to build the C# applications in the tools directory.
+      - The compiled tools should have the executables placed in the resources/tools directory.
+      - The compiled tools are, at this time, only used for the User Guide and are called from the Generate sources: User Guide step.  If you have no reason to build the user guide you can delete that step and won't need the tools.
+    GNU Image Manipulation Program (GIMP)
+      - We use GIMP for most of our image work, and so the master image files are in GIMP's preferred ".xcf" format.
+      - GIMP is in no way integrated into the workflow, so it is completely optional.
+    JNetPcap
+      - The JNetPcap library is used for Live Pcap functionality.
+      - The jnetpcap.jar file should be in dir_application/lib.
+      - The native JNetPcap library for your operating system should be in dir_application.
+    Antlr
+      - The Antlr JAR file should be in dir_application/lib.
+      - We use Version 4.5; using the latest version is probably your best choice.
+    Java 8 (JDK/JRE)
+      - We use version 101.
+      - The classpath.rt path defined below must point to a valid version of rt.jar
+        - This is needed to resolve @NotNull and related annotations when compiling from Ant.
+  Currently, the GrassMarlin development environment lacks resources for building installers.
 -->
-<project name="Grassmarlin" default="distribution" basedir=".">
-    <property name="build.dir" value="build"/>
-    <property name="build.classes.dir" value="${build.dir}/classes"/>
-    <property name="build.app" value="${build.dir}/app"/>
-    <property name="build.release" value="${build.dir}/release" />
-    <property name="class.main" value="util.Launcher"/>
+<!-- 3.3 Script -->
+<project name="Grassmarlin" default="Build Plugins" basedir="." xmlns:if="ant:if">
+    <property name="dir.build.root" value="release" />
+    <property name="dir.build.root.temp" value="${dir.build.root}/temp" />
 
-    <property name="resources.images" value="images"/>
-    <property name="resources.data" value="data"/>
-    <property name="resources.internal" value="resource"/>
-    <property name="resources.xsd" value="${resources.internal}/xsd"/>
-    <property name="resources.grammar" value="${resources.internal}/grammar"/>
+    <property name="dir.resources" value="resources" />
+    <property name="dir.resources.application" value="dir_application" />
+    <property name="dir.resources.internal" value="embedded_resources" />
+    <property name="dir.tools.source" value="tools" />
 
-    <property name="gen.dir" location="generated-sources" />
+    <property name="dir.redistributable" value="${dir.build.root}/redistributable" />
 
-    <property name="installer.dir" value="Installers"/>
-    <property name="lib.dir" value="lib"/>
-    <property name="src.dir" value="src"/>
+    <property name="output.jar" value="${dir.build.root}/GrassMarlin.jar" />
 
     <property name="exec.candle" value="C:/Program Files (x86)/WiX Toolset v3.9/bin/candle.exe"/>
     <property name="exec.light" value="C:/Program Files (x86)/WiX Toolset v3.9/bin/light.exe"/>
 
-    <!-- define the various classpaths which serve different purposes -->
-    <path id="build.classpath">
-        <pathelement location="${build.dir}" />
-    </path>
+    <property name="dir.gen" value="generated-sources" />
+    <property name="dir.lib" value="resources/lib"/>
 
-    <path id="jaxb.classpath">
-        <fileset dir="resource/jaxb">
+    <property name="dir.source" value="source"/>
+    <property name="dir.source.plugins" value="plugin sources" />
+    <property name="dir.fingerprint.gen" value="${dir.source.plugins}/iadgov.fingerprint/generated-sources" />
+
+    <property name="dir.resource.xsd" value="plugin sources/iadgov.fingerprint/embedded_resources/xsd"/>
+    <property name="resource.calcGrammar" value="resources/grammar/Calc.g4"/>
+
+    <!-- Classpaths -->
+    <!-- We need the LIBs used in the main JAR -->
+    <path id="classpath.lib">
+        <fileset dir="${dir.resources.application}/lib">
             <include name="**/*.jar" />
         </fileset>
     </path>
 
-    <path id="lib.classpath">
-        <fileset dir="${lib.dir}">
-            <include name="*.jar"/>
+    <path id="jaxb.classpath">
+        <fileset dir="resources/jaxb">
+            <include name="**/*.jar" />
         </fileset>
     </path>
 
-    <path id="jar.classpath">
-        <fileset dir="${build.app}">
-            <include name="GrassMarlin.jar" />
-        </fileset>
+    <!-- We need the classpath of the GrassMarlin JAR for the plugins -->
+    <path id="classpath.GrassMarlin">
+        <pathelement location="${output.jar}" />
     </path>
 
-    <!-- Build Targets -->
-    <target name="clean">
-        <delete dir="${build.dir}"/>
-        <delete dir="${gen.dir}"/>
-    </target>
+    <!-- we also need the JRE's rt.jar file for some XML classes and annotations -->
+    <path id="classpath.rt">
+        <file file="C:\Program Files\Java\jre1.8.0_101\lib\rt.jar" />
+    </path>
 
-    <target name="compile" depends="gensrc-Fingerprinting" description="Compile sources to .class files">
-        <mkdir dir="${build.classes.dir}"/>
-
-        <javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.classes.dir}" verbose="true" debug="true">
-            <src path="${gen.dir}"/>
-            <classpath refid="lib.classpath"/>
-        </javac>
-
-        <copy todir="${build.classes.dir}">
-            <fileset dir="${src.dir}" excludes="**/*.java"/>
-        </copy>
-    </target>
-
-    <target name="jar" depends="compile" description="Create JAR file.">
-        <mkdir dir="${build.app}"/>
-        <jar destfile="${build.app}/GrassMarlin.jar" basedir="${build.classes.dir}">
-            <manifest>
-                <attribute name="Main-Class" value="${class.main}"/>
-                <attribute name="Permission" value="High"/>
-            </manifest>
-            <zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
-            <zipfileset dir="${resources.internal}/images" prefix="images"/>
-            <zipfileset dir="${resources.internal}/xsd" prefix="xsd"/>
-        </jar>
-    </target>
-
-    <target name="plugins" depends="jar" description="Build plugin JAR file(s).">
-        <mkdir dir="${build.dir}/plugins" />
-        <mkdir dir="${build.app}/plugins" />
-
-        <!-- CsvImport -->
-        <mkdir dir="${build.dir}/plugins/iadgov.csvimport" />
-        <mkdir dir="${build.dir}/plugins/iadgov.csvimport/classes" />
-        <javac includeantruntime="false" srcdir="data/plugins/iadgov.csvimport" destdir="${build.dir}/plugins/iadgov.csvimport/classes" verbose="true" debug="false">
-            <classpath refid="jar.classpath" />
-            <classpath refid="lib.classpath" />
-        </javac>
-        <jar destfile="${build.app}/plugins/iadgov.csvimport.jar" basedir="${build.dir}/plugins/iadgov.csvimport/classes" />
-
-        <!-- OfflinePcap -->
-        <mkdir dir="${build.dir}/plugins/iadgov.offlinepcap" />
-        <mkdir dir="${build.dir}/plugins/iadgov.offlinepcap/classes" />
-        <javac includeantruntime="false" srcdir="data/plugins/iadgov.offlinepcap" destdir="${build.dir}/plugins/iadgov.offlinepcap/classes" verbose="true" debug="true">
-            <classpath refid="jar.classpath" />
-            <classpath refid="lib.classpath" />
-        </javac>
-        <jar destfile="${build.app}/plugins/iadgov.offlinepcap.jar" basedir="${build.dir}/plugins/iadgov.offlinepcap/classes" />
-
-        <!-- SessionEventTest -->
-        <mkdir dir="${build.dir}/plugins/iadgov.sessioneventtest" />
-        <mkdir dir="${build.dir}/plugins/iadgov.sessioneventtest/classes" />
-        <javac includeantruntime="false" srcdir="data/plugins/iadgov.sessioneventtest" destdir="${build.dir}/plugins/iadgov.sessioneventtest/classes" verbose="true" debug="true">
-            <classpath refid="jar.classpath" />
-            <classpath refid="lib.classpath" />
-        </javac>
-        <jar destfile="${build.app}/plugins/iadgov.sessioneventtest.jar" basedir="${build.dir}/plugins/iadgov.sessioneventtest/classes" />
-
-        <!-- SvgExport -->
-        <mkdir dir="${build.dir}/plugins/iadgov.svgexport" />
-        <mkdir dir="${build.dir}/plugins/iadgov.svgexport/classes" />
-        <javac includeantruntime="false" srcdir="data/plugins/iadgov.svgexport" destdir="${build.dir}/plugins/iadgov.svgexport/classes" verbose="true" debug="true">
-            <classpath refid="jar.classpath" />
-            <classpath refid="lib.classpath" />
-        </javac>
-        <jar destfile="${build.app}/plugins/iadgov.svgexport.jar" basedir="${build.dir}/plugins/iadgov.svgexport/classes" />
-    </target>
-
+    <!-- This is used to generate sources for fingerprinting -->
     <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
         <classpath refid="jaxb.classpath"/>
     </taskdef>
 
-    <target name="gensrc-Fingerprinting" depends="clean" description="Generate Fingerprinting Sources">
-        <mkdir dir="${gen.dir}/util/parser"/>
-        <java jar="${lib.dir}/antlr-4.5-complete.jar" fork="true">
+
+    <!-- 3.3 Build Targets -->
+    <target name="Clean">
+        <delete dir="${dir.build.root}" />
+        <mkdir dir="${dir.build.root}" />
+
+        <condition property="logsDirectoryExists">
+            <available file="dir_app_data/logs" type="dir"/>
+        </condition>
+
+        <delete if:true="${logsDirectoryExists}">
+            <fileset dir="dir_app_data/logs" includes="*.log" />
+        </delete>
+
+        <!-- clean up plugin directory -->
+        <delete dir="${dir.resources.application}/plugins" />
+        <mkdir dir="${dir.resources.application}/plugins" />
+
+        <!-- Clear generated sources -->
+        <delete dir="${dir.gen}" />
+        <mkdir dir="${dir.gen}" />
+    </target>
+
+    <target name="Full Release" depends="Release to GitHub,Release to Isolated Dev Workstation,Redistributable" description="Prepare all outputs for exporting a version from the dev network.">
+        <!-- everything is handled by the prereqs.-->
+    </target>
+
+    <target name="Redistributable" depends="Clean" description="Construct the redistributable directory">
+        <mkdir dir="${dir.redistributable}" />
+    </target>
+
+    <target name="Application Directory" depends="Clean,Generate Sources,Build Jar,Redistributable" description="Prepare the application release directory (no livepcap DLL)">
+        <mkdir dir="${dir.redistributable}/GrassMarlin3.3" />
+
+        <copyfile src="${output.jar}" dest="${dir.redistributable}/GrassMarlin3.3/grassmarlin.jar" />
+        <copydir src="${dir.resources.application}" dest="${dir.redistributable}/GrassMarlin3.3" />
+    </target>
+
+    <target name="Release to Isolated Dev Workstation" depends="Application Directory" description="Prepare all resources for burning a standalone dev CD">
+        <mkdir dir="${dir.redistributable}/dev" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3" />
+        <copyfile src="build-ant.xml" dest="${dir.redistributable}/dev/GrassMarlin3.3/build-ant.xml" />
+        <copyfile src="GrassMarlin3.3.iml" dest="${dir.redistributable}/dev/GrassMarlin3.3/GrassMarlin3.3.iml" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/${dir.source}" />
+        <copydir src="${dir.source}" dest="${dir.redistributable}/dev/GrassMarlin3.3/${dir.source}" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/generated-sources" />
+        <copydir src="${dir.source}" dest="${dir.redistributable}/dev/GrassMarlin3.3/generated-sources" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/installers" />
+        <copydir src="${dir.source}" dest="${dir.redistributable}/dev/GrassMarlin3.3/installers" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/${dir.resources.internal}" />
+        <copydir src="${dir.resources.internal}" dest="${dir.redistributable}/dev/GrassMarlin3.3/${dir.resources.internal}" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/${dir.resources.application}" />
+        <copydir src="${dir.resources.application}" dest="${dir.redistributable}/dev/GrassMarlin3.3/${dir.resources.application}" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/${dir.resources}" />
+        <copy todir="${dir.redistributable}/dev/GrassMarlin3.3/${dir.resources}">
+            <fileset dir="${dir.resources}">
+                <!--<exclude name="**/tools/*.exe" />-->
+                <exclude name="**/tools/*.pdb" />
+            </fileset>
+        </copy>
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/${dir.tools.source}" />
+        <copy todir="${dir.redistributable}/dev/GrassMarlin3.3/${dir.tools.source}">
+            <fileset dir="${dir.tools.source}">
+                <exclude name="**/.vs/**" />
+                <exclude name="**/bin/**" />
+                <exclude name="**/obj/**" />
+            </fileset>
+        </copy>
+
+        <!-- HACK: We delete the libs and dlls -->
+        <delete file="${dir.redistributable}/dev/GrassMarlin3.3/dir_application/lib/antlr-4.5-complete.jar" />
+        <delete file="${dir.redistributable}/dev/GrassMarlin3.3/dir_application/lib/jnetpcap.jar" />
+        <delete file="${dir.redistributable}/dev/GrassMarlin3.3/dir_application/jnetpcap.dll" />
+
+        <mkdir dir="${dir.redistributable}/dev/GrassMarlin3.3/plugin sources" />
+        <copy todir="${dir.redistributable}/dev/GrassMarlin3.3/plugin sources">
+            <fileset dir="${dir.source.plugins}">
+                <!--<exclude name="**/*.iml" />-->
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="Release to GitHub" depends="Application Directory" description="Prepare all resources for release to GitHub">
+        <mkdir dir="${dir.redistributable}/github" />
+        <!-- TODO: stage root-level github files -->
+        <mkdir dir="${dir.redistributable}/github/GM3" />
+        <copyfile src="build-ant.xml" dest="${dir.redistributable}/github/GM3/build-ant.xml" />
+
+        <mkdir dir="${dir.redistributable}/github/GM3/${dir.source}" />
+        <copydir src="${dir.source}" dest="${dir.redistributable}/github/GM3/${dir.source}" />
+
+        <mkdir dir="${dir.redistributable}/github/GM3/${dir.resources.internal}" />
+        <copydir src="${dir.resources.internal}" dest="${dir.redistributable}/github/GM3/${dir.resources.internal}" />
+
+        <mkdir dir="${dir.redistributable}/github/GM3/${dir.resources.application}" />
+        <copydir src="${dir.resources.application}" dest="${dir.redistributable}/github/GM3/${dir.resources.application}" />
+
+        <mkdir dir="${dir.redistributable}/github/GM3/${dir.resources}" />
+        <copy todir="${dir.redistributable}/github/GM3/${dir.resources}">
+            <fileset dir="${dir.resources}">
+                <exclude name="**/tools/*.exe" />
+                <exclude name="**/tools/*.pdb" />
+            </fileset>
+        </copy>
+
+        <mkdir dir="${dir.redistributable}/github/GM3/${dir.tools.source}" />
+        <copy todir="${dir.redistributable}/github/GM3/${dir.tools.source}">
+            <fileset dir="${dir.tools.source}">
+                <exclude name="**/.vs/**" />
+                <exclude name="**/bin/**" />
+                <exclude name="**/obj/**" />
+            </fileset>
+        </copy>
+
+        <!-- HACK: We delete the libs and dlls -->
+        <delete file="${dir.redistributable}/github/GM3/dir_application/lib/antlr-4.5-complete.jar" />
+        <delete file="${dir.redistributable}/github/GM3/dir_application/lib/jnetpcap.jar" />
+        <delete file="${dir.redistributable}/github/GM3/dir_application/jnetpcap.dll" />
+
+        <mkdir dir="${dir.redistributable}/github/GM3/plugin sources" />
+        <copy todir="${dir.redistributable}/github/GM3/plugin sources">
+            <fileset dir="${dir.source.plugins}">
+                <exclude name="**/*.iml" />
+            </fileset>
+        </copy>
+
+        <!-- TODO: Build installers -->
+    </target>
+
+    <target name="Build Jar" depends="Clean,Generate Sources" description="Build GrassMarlin 3.3 JAR file.">
+        <!-- compile to temp location -->
+        <mkdir dir="${dir.build.root.temp}/classes" />
+        <javac includeantruntime="false" srcdir="${dir.source}" destdir="${dir.build.root.temp}/classes" verbose="true" debug="false">
+            <src path="${dir.gen}" />
+            <classpath refid="classpath.lib" />
+            <classpath refid="classpath.rt" />
+        </javac>
+
+        <jar destfile="${output.jar}" basedir="${dir.build.root.temp}/classes">
+            <manifest>
+                <attribute name="Main-Class" value="grassmarlin.Launcher"/>
+                <attribute name="Permission" value="High"/>
+            </manifest>
+            <zipfileset dir="${dir.resources.internal}"/>
+        </jar>
+
+        <!-- cleanup temp files -->
+        <delete dir="${dir.build.root.temp}/classes" />
+    </target>
+
+    <target name="Build Plugin">
+        <mkdir dir="${dir.build.root.temp}/${plugin.name}" />
+
+        <!-- create classpath for lib of plugin -->
+        <path id="classpath.plugin.lib">
+            <fileset dir="${dir.source.plugins}/${plugin.name}/lib">
+                <include name="**/*.jar" />
+            </fileset>
+        </path>
+
+        <javac includeantruntime="false" srcdir="${dir.source.plugins}/${plugin.name}" destdir="${dir.build.root.temp}/${plugin.name}" verbose="false" debug="true">
+            <classpath refid="classpath.GrassMarlin" />
+            <classpath refid="classpath.rt" if:set="plugin.requiresruntime"/>
+            <classpath refid="classpath.plugin.lib" if:set="plugin.haslib"/>
+        </javac>
+
+        <condition property="plugin.hasresources">
+            <available file="${dir.source.plugins}/${plugin.name}/embedded_resources" type="dir"/>
+        </condition>
+
+        <jar destfile="${dir.build.root}/${plugin.name}.jar" basedir="${dir.build.root.temp}/${plugin.name}">
+            <zipfileset dir="${dir.source.plugins}/${plugin.name}/embedded_resources" if:true="${plugin.hasresources}"/>
+            <zipgroupfileset dir="${dir.source.plugins}/${plugin.name}/lib/" includes="**/*.jar" if:set="plugin.haslib"/>
+        </jar>
+        <copy file="${dir.build.root}/${plugin.name}.jar" tofile="${dir.resources.application}/plugins/${plugin.name}.jar" />
+
+        <delete dir="${dir.build.root.temp}/${plugin.name}" />
+    </target>
+
+    <target name="Build Plugins" depends="Build Jar" description="Build Plugin JAR files.">
+        <!-- No direct content; everything is handled by dependencies -->
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.teamcolors" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.importcompletealert" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.diff" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.visualpipeline" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.logicalgraph.manualproperties" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.logicalgraph.groupedports" /></antcall>
+        <!--<antcall target="Build Plugin"><param name="plugin.name" value="iadgov.physical.cisco" /></antcall>-->
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.timefilter" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.ping" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.directorywatcher" /><param name="plugin.requiresruntime" value="" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.bro2connparser" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.active.querystatus" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.example.tab" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.siemens" /></antcall>
+        <antcall target="Build Plugin"><param name="plugin.name" value="iadgov.fingerprint" /><param name="plugin.requiresruntime" value="" /><param name="plugin.haslib" value="" /><param name="hasresources" value="" /></antcall>
+    </target>
+
+    <target name="Generate Sources" depends="Clean,Generate Sources: Fingerprinting,Generate Sources: User Guide" description="Executes all generate sources targets.">
+        <!-- Everything is handled by dependencies -->
+    </target>
+
+    <target name="Generate Sources: User Guide" depends="Clean" description="Run the User Guide preprocessor">
+        <exec executable="resources/tools/UserGuidePreprocessing.exe" dir="resources">
+            <arg value="UserGuide.html" />
+            <arg value="../dir_application/UserGuide.html" />
+        </exec>
+    </target>
+    <target name="Generate Sources: Fingerprinting" depends="Clean" description="Generate Fingerprinting Sources">
+        <mkdir dir="${dir.fingerprint.gen}/util/parser"/>
+        <java jar="${dir.lib}/antlr-4.5-complete.jar" fork="true">
             <arg value="-package"/>
             <arg value="util.parser"/>
             <arg value="-o"/>
-            <arg value="${gen.dir}/util/parser"/>
-            <arg value="${resources.grammar}/Calc.g4"/>
+            <arg value="${dir.fingerprint.gen}/util/parser"/>
+            <arg value="${resource.calcGrammar}"/>
         </java>
 
-        <mkdir dir="${gen.dir}/core/fingerprint3"/>
-        <xjc schema="${resources.xsd}\fingerprint3.xsd" package="core.fingerprint3" destdir="${gen.dir}">
-            <produces dir="${gen.dir}/core/fingerprint3" includes="**/*.java"/>
+        <mkdir dir="${dir.fingerprint.gen}/core/fingerprint3"/>
+        <xjc extension="true" binding="${dir.resource.xsd}/serializable.xjb" schema="${dir.resource.xsd}/fingerprint3.xsd"
+             package="core.fingerprint3" destdir="${dir.fingerprint.gen}">
+            <produces dir="${dir.fingerprint.gen}/core/fingerprint3" includes="**/*.java"/>
         </xjc>
-    </target>
-
-    <target name="distribution" description="Directory to install as application directory" depends="jar,plugins">
-        <copy todir="${build.app}/images">
-            <fileset dir="${resources.images}"/>
-        </copy>
-        <copy todir="${build.app}/data/fingerprint">
-            <fileset dir="${resources.data}/fingerprint"/>
-        </copy>
-        <copy todir="${build.app}/data/reference">
-            <fileset dir="${resources.data}/reference"/>
-            <mappedresources>
-                <fileset file="${resources.internal}/raw_images/GRASSMARLIN User Guide.pdf" />
-                <globmapper from="GRASSMARLIN User Guide.pdf" to="GRASSMARLIN_User_Guide3.2.pdf" />
-            </mappedresources>
-
-        </copy>
-        <copy todir="${build.app}/data">
-            <fileset file="${resources.data}/*.csv"/>
-        </copy>
-        <copy todir="${build.app}">
-            <file name="data/GrassMarlin.ico" />
-        </copy>
-    </target>
-
-    <target name="Test Plugins" description="Build plugins and copy to working plugin directory" depends="plugins">
-        <copy todir="plugins">
-            <fileset dir="${build.app}/plugins" />
-        </copy>
-    </target>
-
-    <target name="installers_win" depends="distribution" description="Windows installers.">
-        <mkdir dir="${build.dir}" />
-
-        <!-- The GrassMarlin code is platform-agnostic, but we need a platform-specific jnetpcap -->
-        <echo message="Building Windows 32-bit Installer..." />
-        <exec executable="${exec.candle}">
-            <arg value="-dStagingPath=${build.app}" />
-            <arg value="-dLauncherFile=Installers\WindowsInstallers\GrassMarlin.bat" />
-            <arg value="-dJnetPcapPath=Installers\WindowsInstallers\jnetpcap-32.dll" />
-            <arg value="-o" />
-            <arg value="${build.dir}\temp\grassmarlin-32.wixobj" />
-            <arg value="Installers\WindowsInstallers\Windows.wix" />
-        </exec>
-        <exec executable="${exec.light}">
-            <arg value="-out" />
-            <arg value="${build.dir}\GrassMarlin-32.msi" />
-            <arg value="${build.dir}\temp\grassmarlin-32.wixobj" />
-        </exec>
-        <echo message="Building Windows 64-bit Installer..." />
-        <exec executable="${exec.candle}">
-            <arg value="-dStagingPath=${build.app}" />
-            <arg value="-dLauncherFile=Installers\WindowsInstallers\GrassMarlin.bat" />
-            <arg value="-dJnetPcapPath=Installers\WindowsInstallers\jnetpcap-64.dll" />
-            <arg value="-o" />
-            <arg value="${build.dir}\temp\grassmarlin-64.wixobj" />
-            <arg value="Installers\WindowsInstallers\Windows.wix" />
-        </exec>
-        <exec executable="${exec.light}">
-            <arg value="-out" />
-            <arg value="${build.dir}\GrassMarlin-64.msi" />
-            <arg value="${build.dir}\temp\grassmarlin-64.wixobj" />
-        </exec>
-
-        <!-- Build with live pcap disabled (works on 32- and 64-bit) -->
-        <echo message="Building Windows Installer with Live PCAP Disabled..." />
-        <exec executable="${exec.candle}">
-            <arg value="-dStagingPath=${build.app}" />
-            <arg value="-dLauncherFile=Installers\WindowsInstallers\GrassMarlin_NoPcap.bat" />
-            <arg value="-o" />
-            <arg value="${build.dir}\temp\grassmarlin-nolive.wixobj" />
-            <arg value="Installers\WindowsInstallers\Windows.wix" />
-        </exec>
-        <exec executable="${exec.light}">
-            <arg value="-out" />
-            <arg value="${build.dir}\GrassMarlin-NoLivePcap.msi" />
-            <arg value="${build.dir}\temp\grassmarlin-nolive.wixobj" />
-        </exec>
-
-        <!-- The installers that also package Wireshark and Java are platform-dependent -->
-        <!-- 32-Bit Installer -->
-        <echo message="Building Windows 32-bit Installer with Prerequisites..." />
-        <exec executable="${exec.candle}">
-            <arg value="-dJavaInstaller=Installers\WindowsInstallers\jdk-8u92-windows-i586.exe" /><!-- TODO: Get JRE-8u92 on the dev network -->
-            <arg value="-dWiresharkInstaller=Installers\WindowsInstallers\Wireshark-win32-1.12.6.exe" />
-            <arg value="-dGrassMarlinInstaller=${build.dir}\GrassMarlin-32.msi" />
-            <arg value="-o" />
-            <arg value="${build.dir}\temp\grassmarlin-bundle32.wixobj" />
-            <arg value="-ext" />
-            <arg value="WixBalExtension" />
-            <arg value="Installers\WindowsInstallers\WindowsBundle.wix" />
-        </exec>
-        <exec executable="${exec.light}">
-            <arg value="${build.dir}\temp\grassmarlin-bundle32.wixobj" />
-            <arg value="-ext" />
-            <arg value="WixBalExtension" />
-            <arg value="-out" />
-            <arg value="${build.dir}\GrassMarlin-Full-i586.exe" />
-        </exec>
-        <!-- 64-Bit Installers -->
-        <echo message="Building Windows 64-bit Installer with Prerequisites..." />
-        <exec executable="${exec.candle}">
-            <arg value="-dJavaInstaller=Installers\WindowsInstallers\jre-8u92-windows-x64.exe" />
-            <arg value="-dWiresharkInstaller=Installers\WindowsInstallers\Wireshark-win64-1.12.6.exe" />
-            <arg value="-dGrassMarlinInstaller=${build.dir}\GrassMarlin-64.msi" />
-            <arg value="-o" />
-            <arg value="${build.dir}\temp\grassmarlin-bundle64.wixobj" />
-            <arg value="-ext" />
-            <arg value="WixBalExtension" />
-            <arg value="Installers\WindowsInstallers\WindowsBundle.wix" />
-        </exec>
-        <exec executable="${exec.light}">
-            <arg value="${build.dir}\temp\grassmarlin-bundle64.wixobj" />
-            <arg value="-ext" />
-            <arg value="WixBalExtension" />
-            <arg value="-out" />
-            <arg value="${build.dir}\GrassMarlin-Full-x64.exe" />
-        </exec>
-
-        <!-- Not quite an installer, but set up a zip for distribution when admin rights are problematic -->
-        <echo message="Building Windows 32-bit ZIP..." />
-        <zip destfile="${build.dir}/GrassMarlin-Win-32.zip">
-            <zipfileset dir="${build.app}" excludes="**\iadgov.csvimport.jar,**\iadgov.sessioneventtest.jar" />
-            <zipfileset file="Installers/WindowsInstallers/GrassMarlin.bat" />
-            <mappedresources>
-                <fileset file="Installers/WindowsInstallers/jnetpcap-32.dll" />
-                <globmapper from="jnetpcap-32.dll" to="jnetpcap.dll" />
-            </mappedresources>
-        </zip>
-        <echo message="Building Windows 64-bit ZIP..." />
-        <zip destfile="${build.dir}/GrassMarlin-Win-64.zip">
-            <zipfileset dir="${build.app}" excludes="**\iadgov.csvimport.jar,**\iadgov.sessioneventtest.jar" />
-            <zipfileset file="Installers/WindowsInstallers/GrassMarlin.bat" />
-            <mappedresources>
-                <fileset file="Installers/WindowsInstallers/jnetpcap-64.dll" />
-                <globmapper from="jnetpcap-64.dll" to="jnetpcap.dll" />
-            </mappedresources>
-        </zip>
-        <echo message="Building Windows ZIP without Live PCAP..." />
-        <zip destfile="${build.dir}/GrassMarlin-Win-NoLivePcap.zip">
-            <zipfileset dir="${build.app}" excludes="**\iadgov.csvimport.jar,**\iadgov.sessioneventtest.jar" />
-            <zipfileset file="Installers/WindowsInstallers/GrassMarlin_NoPcap.bat" />
-        </zip>
-
-        <delete dir="${build.dir}/temp" />
-    </target>
-
-    <target name="installers_all" depends="installers_win" description="All installers.">
-        <!-- TODO: Add additional dependencies as other installer workflows are prepared. -->
-    </target>
-
-    <target name="release" depends="installers_all" description="Prepare source and installers for public or internal release">
-        <mkdir dir="${build.release}" />
-        <copydir src="data" dest="${build.release}/data" />
-        <copydir src="images" dest="${build.release}/images" />
-        <copydir src="lib" dest="${build.release}/lib" />
-        <copydir src="resource" dest="${build.release}/resource" />
-        <copydir src="src" dest="${build.release}/src" />
-        <copyfile src="build-ant.xml" dest="${build.release}/build-ant.xml" />
-        <!-- Note: The internal development code has an Installers directory which contains the
-        installer scripts and files.  This is not released, as it includes things like copies of
-        the JRE and the Wireshark installers, which are not directly part of a GrassMarlin release.
-         -->
-        <mkdir dir="${build.release}/Installers" />
-        <copy file="${build.dir}/GrassMarlin-32.msi" tofile="${build.release}/Installers/GrassMarlin-Win32.msi" />
-        <copy file="${build.dir}/GrassMarlin-64.msi" tofile="${build.release}/Installers/GrassMarlin-Win64.msi" />
-        <copy file="${build.dir}/GrassMarlin-NoLivePcap.msi" tofile="${build.release}/Installers/GrassMarlin-Win-NoLivePcap.msi" />
-        <copy file="${build.dir}/GrassMarlin-Full-i586.exe" tofile="${build.release}/Installers/GrassMarlin-Win32-WithPrereqs.exe" />
-        <copy file="${build.dir}/GrassMarlin-Full-x64.exe" tofile="${build.release}/Installers/GrassMarlin-Win64-WithPrereqs.exe" />
-        <copy file="${build.dir}/GrassMarlin-Win-32.zip" toFile="${build.release}/Installers/GrassMarlin-Win32.zip" />
-        <copy file="${build.dir}/GrassMarlin-Win-64.zip" toFile="${build.release}/Installers/GrassMarlin-Win64.zip" />
-        <copy file="${build.dir}/GrassMarlin-Win-NoLivePcap.zip" toFile="${build.release}/Installers/GrassMarlin-Win-NoLivePcap.zip" />
-        <mkdir dir="${build.release}/Plugins" />
-        <copy file="${build.app}/plugins/iadgov.csvimport.jar" toFile="${build.release}/Plugins/iadgov.csvimport.jar" />
-        <copy file="${build.app}/plugins/iadgov.offlinepcap.jar" toFile="${build.release}/Plugins/iadgov.offlinepcap.jar" />
-        <copy file="${build.app}/plugins/iadgov.svgexport.jar" toFile="${build.release}/Plugins/iadgov.svgexport.jar" />
     </target>
 </project>
