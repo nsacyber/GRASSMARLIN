@@ -1,3 +1,14 @@
+# Build Instructions
+```
+mvn generate-resources
+mvn package
+```
+
+# Run Instruction
+```
+java -jar target/grassmarlin_cli.jar -f <fingerprints> -p <pcap>
+```
+
 # PCAP parsing
 GRASSMARLIN requires the use of jnetpcap to perform pcap parsing. This library
 can be found at the following link:
