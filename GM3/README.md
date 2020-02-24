@@ -6,7 +6,7 @@ mvn package
 
 # Run Instruction
 ```
-java -jar target/grassmarlin_cli.jar -f <fingerprints> -p <pcap>
+java -jar target/grassmarlin-cli-1.0-SNAPSHOT-jar-with-dependencies.jar -f <fingerprints> -p <pcap>
 ```
 
 # PCAP parsing
