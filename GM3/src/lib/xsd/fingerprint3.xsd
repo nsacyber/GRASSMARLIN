@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" elementFormDefault="qualified">
+  <xs:element name="FingerPrintDetails">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="FingerprintList"
+          type="FingerprintListType" />
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="CustomerList"
+          type="CustomerListType" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="CustomerListType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Customer"
+        type="CustomerType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CustomerType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="CustomerRefId"
+        type="xs:string" />
+      <xs:element minOccurs="1" name="FingerprintList" type="FingerprintListType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="FingerprintListType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="unbounded" name="Fingerprint" type="FingerprintType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="FingerprintType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="FingerprintId" type="xs:integer" />
+      <xs:element minOccurs="1" maxOccurs="1" name="FingerprintFriendlyName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CustomFingerprint" type="xs:string" />
+      <xs:element minOccurs="0" name="FingerprintValue" type="xs:string" />      
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
